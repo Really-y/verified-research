@@ -1,6 +1,7 @@
 ---
 name: research-method
 description: Use for any research task that needs facts or figures from external sources, in any country, language or field (market, business, academic, regulatory, technical, financial, policy). Requires a source and a verbatim quote for every figure and machine-verifies the report.
+allowed-tools: Bash(python3 "${CLAUDE_PLUGIN_ROOT}/scripts/fetch_text.py" *), Bash(python3 "${CLAUDE_PLUGIN_ROOT}/scripts/verify_report.py" *), Bash(python3 "${CLAUDE_PLUGIN_ROOT}/scripts/save_findings.py" *)
 ---
 
 # Araşdırma metodu
@@ -65,6 +66,8 @@ Sahələr: `source_tier` hər fakt üçün məcburidir; `key` nəticənin söyk�
 
 Sitat qaydaları:
 - Sitatı mənbədən **köçür**, yaddaşdan yazma və tərcümə etmə. Yoxlama skripti onu səhifədə hərfi axtarır, ona görə sitat mənbənin dilində qalır.
+- Sitatı `WebFetch`-in xülasəsindən götürmə. Mətni yoxlama skriptinin gördüyü kimi al:
+  `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/fetch_text.py" "<URL>" --grep "<açar söz>"` (HTML, PDF və JSON üçün).
 - `value` sahəsini **mənbədə yazıldığı kimi** yaz: `1,234,567.89` (ingilis), `1.234.567,89` (alman, türk), `58 997,7` (Azərbaycan, rus). Hesabat mətnində də eyni yazılışı işlət.
 - Rəqəm sitatın içində olmalıdır. Cədvəl sətri də sitat ola bilər.
 - PDF-dən sitat götürəndə çıxarılmış mətndən götür: sətir sonu defisləri itə bilər.
