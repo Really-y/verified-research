@@ -1,9 +1,11 @@
 ---
 name: research-types
-description: Use at the start of a research task to pick the right approach and evidence standard for its type - market, company or financial, academic or scientific literature, legal or regulatory, technical or product, policy or socioeconomic, or due diligence on an organisation.
+description: Use at the start of a research task to pick the right approach and evidence standard for its type - market, company or financial, academic or scientific literature, legal or regulatory, technical or product, policy or socioeconomic, or due diligence on an organisation. Always used together with research-method.
 ---
 
 # Araşdırma növləri
+
+> **Əvvəlcə `research-method`.** Bu skill təkbaşına işləmir: tapıntı formatı, hərfi sitat qaydası, fayl adları və avtomatik yoxlama `verified-research:research-method`-dadır. O, bu sessiyada hələ yüklənməyibsə, indi `Skill` aləti ilə onu çağır, sonra buraya qayıt.
 
 Sualın növünü müəyyən et. Bir sual bir neçə növü əhatə edə bilər; onda hər hissə üçün öz standartını tətbiq et.
 

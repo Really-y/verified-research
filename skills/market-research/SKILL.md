@@ -1,9 +1,11 @@
 ---
 name: market-research
-description: Use for any full market study of a product, sector or country market. Enforces a twelve-part coverage checklist so no part of the market is silently skipped.
+description: Use for any full market study of a product, sector or country market. Enforces a twelve-part coverage checklist so no part of the market is silently skipped. Always used together with research-method.
 ---
 
 # Tam bazar araşdırması
+
+> **Əvvəlcə `research-method`.** Bu skill təkbaşına işləmir: tapıntı formatı, hərfi sitat qaydası, fayl adları və avtomatik yoxlama `verified-research:research-method`-dadır. O, bu sessiyada hələ yüklənməyibsə, indi `Skill` aləti ilə onu çağır, sonra buraya qayıt.
 
 Bazar araşdırması on iki bölmənin hamısını əhatə etməlidir. Araşdırmadan **əvvəl** `reports/<ad>.coverage.json` yarat, işlədikcə yenilə. Skript on iki açarın hamısını tələb edir.
 

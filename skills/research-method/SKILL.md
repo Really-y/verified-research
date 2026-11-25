@@ -1,6 +1,6 @@
 ---
 name: research-method
-description: Use for any research task that needs facts or figures from external sources, in any country, language or field (market, business, academic, regulatory, technical, financial, policy). Requires a source and a verbatim quote for every figure and machine-verifies the report.
+description: Use FIRST for any question that asks for facts or figures from external sources (for example "how big is the X market in Baku?", "how has Y changed?"), in any country, language or field (market, business, academic, regulatory, technical, financial, policy). Requires a source and a verbatim quote for every figure and machine-verifies the report.
 allowed-tools: Bash(python3 "${CLAUDE_PLUGIN_ROOT}/scripts/fetch_text.py" *), Bash(python3 "${CLAUDE_PLUGIN_ROOT}/scripts/verify_report.py" *), Bash(python3 "${CLAUDE_PLUGIN_ROOT}/scripts/save_findings.py" *)
 ---
 

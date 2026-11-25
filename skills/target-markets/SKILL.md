@@ -1,9 +1,11 @@
 ---
 name: target-markets
-description: Use when choosing, comparing or prioritising countries or regions as target markets, for export, market entry or expansion decisions.
+description: Use when choosing, comparing or prioritising countries or regions as target markets, for export, market entry or expansion decisions. Always used together with research-method.
 ---
 
 # Hədəf bazar seçimi
+
+> **Əvvəlcə `research-method`.** Bu skill təkbaşına işləmir: tapıntı formatı, hərfi sitat qaydası, fayl adları və avtomatik yoxlama `verified-research:research-method`-dadır. O, bu sessiyada hələ yüklənməyibsə, indi `Skill` aləti ilə onu çağır, sonra buraya qayıt.
 
 ## Addımlar
 1. **Məhsulu və məhdudiyyətləri dəqiqləşdir:** məhsul və ya xidmət (ticarət üçün HS kodu), büdcə, satış modeli (ixrac, onlayn, yerli tərəfdaş, nümayəndəlik), istisna olunan ölkələr.

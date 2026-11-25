@@ -1,9 +1,11 @@
 ---
 name: business-analysis
-description: Use for business analysis in any market - market sizing (TAM/SAM/SOM), competition, SWOT, PESTEL, Porter's five forces, unit economics, break-even, or evaluating a business idea.
+description: Use for business analysis in any market - market sizing (TAM/SAM/SOM), competition, SWOT, PESTEL, Porter's five forces, unit economics, break-even, or evaluating a business idea. Always used together with research-method.
 ---
 
 # Biznes təhlili
+
+> **Əvvəlcə `research-method`.** Bu skill təkbaşına işləmir: tapıntı formatı, hərfi sitat qaydası, fayl adları və avtomatik yoxlama `verified-research:research-method`-dadır. O, bu sessiyada hələ yüklənməyibsə, indi `Skill` aləti ilə onu çağır, sonra buraya qayıt.
 
 Çərçivələr: [references/frameworks.md](references/frameworks.md).
 
