@@ -6,7 +6,7 @@ description: Use to decide where to get data for a given country or topic - offi
 # Mənbə xəritəsi
 
 1. Beynəlxalq və mövzu mənbələri: [references/global.md](references/global.md)
-2. Ölkə mənbələri: `references/countries/<ISO2>.md` (məsələn [AZ](references/countries/AZ.md))
+2. Ölkə mənbələri: `references/countries/<ISO2>.md` ([AZ](references/countries/AZ.md), [US](references/countries/US.md))
 3. İş qovluğunda toplanmış ölkə faylları: `research-data/sources/<ISO2>.md`
 
 "yoxlanılmayıb" statuslu mənbəni istifadə etməzdən əvvəl aç, işlədiyini təsdiqlə və statusu yenilə.

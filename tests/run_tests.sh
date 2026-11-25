@@ -346,5 +346,13 @@ printf '# Əhali\n\n## Xülasə\nƏhali 10 180 min.\n\n## Əsas rəqəmlər\n| G
 check seq 0 "YOXLAMA KEÇDİ"
 grep -q "ardıcıl tam ədədlərin bir hissəsidir" reports/seq.quality.md && echo "KEÇDİ   ardıcıl tam ədədlər keyfiyyət xülasəsində insana göstərilir" || { echo "UĞURSUZ ardıcıl tam ədəd qeydi yoxdur"; FAIL=1; }
 
+# real sınaqda tapıldı (Gürcüstan): xəritəsi olmayan ölkə üçün mənbə faylı yaradılmırdı
+sed 's/"key":true}/"key":true,"country":"GE"}/' reports/good.findings.json > reports/nomap.findings.json; cp reports/good.md reports/nomap.md
+check nomap 1 "ÖLKƏ MƏNBƏ FAYLI YOXDUR"
+mkdir -p research-data/sources; printf '# Gürcüstan (GE)\n| Qurum | URL |\n|---|---|\n| Geostat | https://www.geostat.ge |\n' > research-data/sources/GE.md
+check nomap 0 "YOXLAMA KEÇDİ"
+sed 's/"key":true}/"key":true,"country":"AZ"}/' reports/good.findings.json > reports/azmap.findings.json; cp reports/good.md reports/azmap.md
+check azmap 0 "YOXLAMA KEÇDİ"
+
 echo; [ $FAIL -eq 0 ] && echo "BÜTÜN SINAQLAR KEÇDİ" || echo "UĞURSUZ SINAQ VAR"
 exit $FAIL

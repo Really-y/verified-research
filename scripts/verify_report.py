@@ -548,6 +548,17 @@ def verify(report_path, delay=1.0, out=sys.stdout):
             st["verified"] += 1
             R.ok("TƏSDİQLƏNDİ" + (" (+%d müstəqil mənbə)" % good_corr if good_corr else ""))
 
+    # ölkə mənbə xəritəsi: plugin-də və ya iş qovluğunda olmalıdır (source-map)
+    countries = sorted({str(f.get("country", "")).strip().upper() for f in findings if isinstance(f, dict)
+                        and re.fullmatch(r"[A-Za-z]{2}", str(f.get("country", "")).strip())})
+    plugin_maps = Path(__file__).resolve().parent.parent / "skills" / "source-map" / "references" / "countries"
+    work_maps = report_path.resolve().parent.parent / "research-data" / "sources"
+    for cc in countries:
+        if not (plugin_maps / ("%s.md" % cc)).exists() and not (work_maps / ("%s.md" % cc)).exists():
+            R.bad("ÖLKƏ MƏNBƏ FAYLI YOXDUR: %s. Bu ölkənin xəritəsi yoxdur; source-map skill-inə görə əvvəlcə "
+                  "research-data/sources/%s.md yarat (statistika qurumu, mərkəzi bank, gömrük, reyestr, "
+                  "qanunvericilik bazası və s., hər biri URL və data formatı ilə)" % (cc, cc))
+
     # hesabat mətni
     R.lines.append("[hesabat mətni]")
     allowed_canon = {next(iter(canon(a))) for a in allowed if len(canon(a)) == 1}

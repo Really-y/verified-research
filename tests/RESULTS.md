@@ -1,5 +1,38 @@
 # Sınaq nəticələri
 
+## 2026-11-26, v0.5.0: real sessiyalar (Claude Code 2.1.332, Linux, giriş edilib, açıq internet)
+
+| Yoxlama | Nəticə |
+|---|---|
+| `claude plugin validate . --strict` | Validation passed |
+| `bash tests/run_tests.sh` | 61 sınaqdan 61-i keçdi (əvvəl 50) |
+| Yüklənmə (`claude --plugin-dir .. plugin list`, `sandbox/`-dan) | `verified-research@inline`, Status: loaded; 11 skill, 8 agent, 1 hook. `/plugin` Errors tabı interaktiv olduğu üçün açılmayıb |
+
+**Şərt 1, skill-in avtomatik seçilməsi.** "Bakıda qəhvə bazarı nə qədərdir?" sualında (başsız sessiya) Claude özü `verified-research:market-research`-i çağırdı, amma `research-method`-u yükləmədi. Düzəliş: `market-research`, `business-analysis`, `target-markets`, `competitor-watch`, `research-types` əvvəlcə `research-method`-u çağırmağı tələb edir; `research-method` təsviri gücləndirildi. Təkrar sınaqda ardıcıllıq `market-research` → `research-method` oldu. 5 araşdırma sınağının 5-də `research-method` özü seçildi.
+
+**Şərt 2, hook.** Real sessiyada uydurma rəqəmli `sandbox/reports/hooktest.md` yazdırıldı. Debug log (`sandbox/logs/s2-hook.debug.log`): `PostToolUse:Write [python3 ".../scripts/hook_verify.py"] (plugin verified-research@inline) finished with status 2 (273ms)`; `findings.json` yazılanda status 0. Claude stderr-i sözbəsöz aldı: `SİTAT TAPILMADI mənbə səhifəsində: https://www.stat.gov.az/news/source/DT_PRESS_12_2023.pdf ...`.
+
+**Şərt 3, `${CLAUDE_PLUGIN_ROOT}`.** Sənədə görə Bash-da mühit dəyişəni deyil, skill mətni yüklənəndə yerinə qoyulur. Real sessiyada yüklənmiş `research-method` mətnində yol artıq açılmışdı: `python3 "/home/.../verified-research/scripts/verify_report.py"`. İşləyir; dəyişiklik lazım olmadı. `allowed-tools` frontmatter-ə skriptlər əlavə edildi.
+
+**Şərt 4.** `global.md` (30 sətir), `AZ.md` (11), `tools.md` (13) statusları yeniləndi, `US.md` əlavə edildi. Əlçatmaz (avtomatik sorğuya 403 və ya `robots.txt`): IMF, ITU DataHub, Espacenet, Google Trends, Meta Ad Library, Census, `www.bls.gov` (API işləyir), FRED (vaxt bitdi). Qeydiyyat lazımdır: FAOSTAT API, UN WPP API, EIA API, Companies House API, OpenCorporates, Cloudflare Radar. e-qanun.az JavaScript tətbiqidir, qanun mətni statik HTML-də yoxdur. stat.gov.az PDF-i skript birbaşa oxuyur (əvvəl konteynerdən sınanmamışdı).
+
+**Şərt 0a, tənqidçi.** Bilərəkdən zəif qaralama (Bakıda çatdırılma tətbiqi: 500 mln tək bloqdan, Wolt və Bolt Food nəzərə alınmayıb, 30% pay və 40% artım optimist). `critic` **3 qüsurdan 3-nü** `high` kimi tapdı, üstəlik 5 əlavə konkret etiraz və 4 uğursuzluq nümunəsi (mənbə linki ilə). Möhkəm hesabatda (DSK 2023, iki rəqəm) etirazlar formal deyildi; hamısını mənbədən yoxladım: 2024 = 62 202,9 və 2025 = 67 637,9 mln manat (DSK `trade_2026.pdf`), "3,7 faiz" həqiqətən press-relizdə iki dəfə keçir. Uydurma etiraz tapılmadı, `critic.md` dəyişdirilmədi.
+
+**Şərt 6, DSK ilə əl müqayisəsi (sınaq 1).** Hesabat: 30 fakt, 30-u skriptlə təsdiqləndi. Özüm DSK press-relizlərində və `trade_2026.pdf`-də tapdım: 2022 52 171,0; 2023 58 997,7 (real 103,7); 2024 62 202,9 (103,9); 2025 67 637,9 (103,8) mln manat; 2025 press-relizi 67,6 / 36,9 / 30,7 mlrd; 2026 yanvar–oktyabr 57523,4 mln: **hamısı uyğundur**. Cədvəl sütunlarının mənası (ərzaq payı 50,7/56,3/54,6%) düz oxunub. 8 təxmini yenidən hesabladım, hamısı düzdür. Uyğunsuzluq tapılmadı.
+
+**Sınaq 2 (Gürcüstan).** 27 fakt, 27-si təsdiqləndi; əsas rəqəmlər Geostat-dandır (səviyyə 1). **Uğursuzluq:** `research-data/sources/GE.md` yaradılmadı, çünki `source-map` skill-i heç çağırılmadı. Düzəliş: `research-method` 2-ci addımı ölkə xəritəsini məcburi edir; `verify_report.py` tapıntıda xəritəsi olmayan `country` görəndə rədd edir (`ÖLKƏ MƏNBƏ FAYLI YOXDUR`, 3 yeni sınaq). Bu düzəlişdən sonra sınaq 2 təkrar işlədilməyib.
+
+**Şərt 8.** Araşdırmaçılar, `fact-checker` və `critic`: `WebSearch, WebFetch, Bash, Read, Grep, Glob` (Write/Edit yoxdur; Bash hərfi sitat üçün `fetch_text.py` və PDF oxumağa lazımdır). `report-editor`: `Read, Write, Edit, Bash, Grep, Glob`.
+
+**Şərt 9, tapılıb düzəldilən zəif yerlər:** minlik ayırıcısız dəyər (`1234567.89` = `1,234,567.89`, birmənalı olmayan `1,234` qəbul edilmir); ərəb, fars, devanaqari rəqəmləri və istiqamət işarələri; `registrable()` (or.jp, gov.tr, blogspot, github.io və s.); dil-neytral başlıq işarəsi `<!-- key-figures -->`; JavaScript səhifəsi aşkarlanır, Next.js datasındakı sitat tapılır; başqa domendə eyni sitat köçürmə sayılır; ardıcıl tam ədədlər insana göstərilir. Real sınaqlarda tapılanlar: **PDF-də sözün içinə düşən boşluq** düzgün sitatı rədd edirdi (yanlış rədd); **pozuq URL** skripti çökdürürdü; sınaq PDF-i "ə" hərfi olmayan şriftlə yaradılırdı.
+
+**Hələ bağlanmayıb (istifadə limiti doldu):**
+- Şərt 0 (20 tapıntının əl ilə yoxlanması): sınaq 1-in 30 faktı və 8 təxmini yoxlanıb, hamısı düzdür (yuxarıda); 20 tapıntılı qarışıq seçim (bütün sınaqlardan) aparılmayıb.
+- Şərt 5: 9 sınaqdan 1 və 2 bitib, hər ikisində `verify_report.py` 0 qaytarıb; 3–9 limit dolanda yarımçıq qaldı.
+- Şərt 7: eval halları yazılıb (`evals/01..09`), `claude plugin eval` işlədilməyib, pluginlə/pluginsiz fərq yoxdur.
+
+**`trusted_domains.txt` üçün təkliflər (siyahı dəyişdirilməyib):** `geostat.ge 1` (artıq var), `wine.gov.ge 1`, `bls.gov 1`, `bea.gov 1`, `ecfr.gov 1`, `federalregister.gov 1`, `comtradeapi.un.org` (`un.org` ilə əhatə olunur).
+
 ## 2026-11-26, v0.4.0: tənqid və əks mövqe (Claude Code 2.1.332, Linux konteyner, giriş edilməyib)
 
 | Yoxlama | Əmr | Nəticə |

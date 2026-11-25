@@ -10,7 +10,7 @@ Claude cites a source and a **verbatim quote** for every number, and a determini
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-1f6feb.svg)](LICENSE)
 [![Claude Code plugin](https://img.shields.io/badge/Claude_Code-plugin-d97757.svg)](https://code.claude.com/docs/en/plugins)
-[![Tests](https://img.shields.io/badge/tests-58%2F58_passing-2ea44f.svg)](tests/RESULTS.md)
+[![Tests](https://img.shields.io/badge/tests-61%2F61_passing-2ea44f.svg)](tests/RESULTS.md)
 [![Python](https://img.shields.io/badge/python-3.9%2B-3776ab.svg)](#requirements)
 [![Made by Azedev](https://img.shields.io/badge/made_by-Yusif_Ezizov_%2F_Azedev-8957e5.svg)](https://github.com/Really-y)
 
@@ -166,7 +166,7 @@ company registry, legal database) and saves them to `research-data/sources/<ISO2
 
 ```bash
 claude plugin validate . --strict
-bash tests/run_tests.sh          # 58 checks: local web server as fake "sources", real DSK PDF text, hook exit codes
+bash tests/run_tests.sh          # 61 checks: local web server as fake "sources", real DSK PDF text, hook exit codes
 claude plugin eval . --allow-tools WebSearch WebFetch Write Edit Bash   # 9 real research cases, with vs without plugin
 ```
 
