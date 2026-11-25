@@ -1,0 +1,48 @@
+# domen  səviyyə   (1 ilkin rəsmi, 2 beynəlxalq təşkilat və resenziyalı nəşr bazası, 3 şirkət açıqlaması, 4 araşdırma)
+# Dövlət domenləri (.gov, .gov.xx, .gob, .gouv, .go.xx, .gc.ca, .mil) avtomatik 1 sayılır.
+# Bu siyahıya yalnız insan əlavə edir. Siyahıda olmayan mənbə üçün agent tier_reason yazır
+# və o, keyfiyyət xülasəsində "insan baxmalıdır" bölməsinə düşür.
+cbar.az 1
+e-qanun.az 1
+europa.eu 1
+ecb.europa.eu 1
+destatis.de 1
+insee.fr 1
+istat.it 1
+ine.es 1
+cbs.nl 1
+scb.se 1
+stat.go.jp 1
+kostat.go.kr 1
+abs.gov.au 1
+statcan.gc.ca 1
+geostat.ge 1
+tcmb.gov.tr 1
+bundesbank.de 1
+federalreserve.gov 1
+bankofengland.co.uk 1
+worldbank.org 2
+imf.org 2
+oecd.org 2
+un.org 2
+who.int 2
+ilo.org 2
+fao.org 2
+wto.org 2
+wipo.int 2
+itu.int 2
+iea.org 2
+bis.org 2
+unctad.org 2
+adb.org 2
+ebrd.com 2
+openalex.org 2
+crossref.org 2
+doi.org 2
+nature.com 2
+science.org 2
+thelancet.com 2
+opencorporates.com 4
+arxiv.org 4
+statista.com 4
+euromonitor.com 4
