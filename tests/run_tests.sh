@@ -310,5 +310,41 @@ check rejected   0 "tənqid: 3 etiraz"
 grep -q "Rədd edilmiş ciddi etirazlar" reports/rejected.quality.md && grep -q "rəqib artıq bazardadır" reports/rejected.quality.md \
   && echo "KEÇDİ   rədd edilmiş ciddi etiraz keyfiyyət xülasəsində insana göstərilir" || { echo "UĞURSUZ rədd edilmiş etiraz göstərilmir"; FAIL=1; }
 
+echo "--- zəif yerlər (GOAL şərt 9)"
+python3 "$ROOT/tests/test_weaknesses.py" || FAIL=1
+# köçürülmüş sitat: fərqli domen, amma eyni mətn
+cat > site/copy.html << 'EOF'
+<html><body><p>Xəbər: Ekspertlərin fikrincə bazarın həcmi 480 milyon manatdır.</p></body></html>
+EOF
+C_COPY='{"source_url":"'$L'/copy.html","quote":"bazarın həcmi 480 milyon manatdır","value":"480","value_num":480000000,"source_tier":1,"tier_reason":"sınaq"}'
+q copied "[{$P,\"source_tier\":5,\"corroboration\":[$C_COPY]}]"
+check copied 1 "köçürmə əlaməti"
+# JavaScript səhifəsi: məzmun skriptdə, görünən mətn yoxdur
+cat > site/spa.html << 'EOF'
+<html><head><script src="/app.js"></script></head><body><div id="root"></div><noscript>Enable JavaScript</noscript></body></html>
+EOF
+cat > site/next.html << 'EOF'
+<html><body><div id="__next"></div><script id="__NEXT_DATA__" type="application/json">{"props":{"t":"Ekspertlərin fikrincə bazarın həcmi 480 milyon manatdır."}}</script></body></html>
+EOF
+q spa  "[{$(sed 's#/media.html#/spa.html#' <<< "$P"),\"source_tier\":1,\"tier_reason\":\"sınaq\"}]"
+q next "[{$(sed 's#/media.html#/next.html#' <<< "$P"),\"source_tier\":1,\"tier_reason\":\"sınaq\"}]"
+check spa  1 "SƏHİFƏ JAVASCRIPT İLƏ YÜKLƏNİR"
+check next 0 "skript datasında tapıldı"
+# minlik ayırıcısız dəyər (mənbədə 1,234,567.89) və dil-neytral başlıq işarəsi
+mken nosep "1,234,567.89"; sed -i 's/"value":"1,234,567.89"/"value":"1234567.89"/' reports/nosep.findings.json
+check nosep 0 "4/4 fakt təsdiqləndi"
+sed 's/^## Key figures/## Chiffres clés <!-- key-figures -->/' reports/en.md > reports/frmark.md; cp reports/en.findings.json reports/frmark.findings.json
+check frmark 0 "YOXLAMA KEÇDİ"
+# ardıcıl tam ədədlər: dəyər yalnız bir hissədir, insan baxmalıdır
+cat > site/pop.html << 'EOF'
+<html><body><p>Əhalinin sayı 10 180 812 nəfər olmuşdur.</p></body></html>
+EOF
+cat > reports/seq.findings.json << EOF
+[{"indicator":"Əhali","value":"10 180","value_num":10180,"unit":"min","period":"2025","source_url":"$B/pop.html","quote":"Əhalinin sayı 10 180 812 nəfər olmuşdur.","type":"fact","source_tier":1,"tier_reason":"sınaq","key":true}]
+EOF
+printf '# Əhali\n\n## Xülasə\nƏhali 10 180 min.\n\n## Əsas rəqəmlər\n| G | D | M |\n|---|---|---|\n| Əhali | 10 180 | [m](%s/pop.html) |\n' "$B" > reports/seq.md
+check seq 0 "YOXLAMA KEÇDİ"
+grep -q "ardıcıl tam ədədlərin bir hissəsidir" reports/seq.quality.md && echo "KEÇDİ   ardıcıl tam ədədlər keyfiyyət xülasəsində insana göstərilir" || { echo "UĞURSUZ ardıcıl tam ədəd qeydi yoxdur"; FAIL=1; }
+
 echo; [ $FAIL -eq 0 ] && echo "BÜTÜN SINAQLAR KEÇDİ" || echo "UĞURSUZ SINAQ VAR"
 exit $FAIL

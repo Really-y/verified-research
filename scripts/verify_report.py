@@ -24,10 +24,12 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
-UA = "verified-research/0.4 (+report verification)"
+UA = "verified-research/0.5 (+report verification)"
 SPACES = "\u00a0\u2009\u202f\u2007"
 KEY_HEADINGS = ["Əsas rəqəmlər", "Key figures", "Ключевые показатели", "Temel rakamlar"]
 EST_MARKS = ["TƏXMİN", "ESTIMATE", "ОЦЕНКА", "TAHMİN"]
+# Başqa dillərdə başlıq dil-neytral işarə ilə tanınır: "## Chiffres clés <!-- key-figures -->"
+KEY_MARK, CRIT_MARK = "key-figures", "critique"
 CRIT_HEADINGS = ["Tənqid və əks mövqe", "Critique and counter-case", "Критика и контраргументы", "Eleştiri ve karşı görüş"]
 SEVERITIES = {"high", "medium", "low"}
 RESPONSES = {"accepted", "partially", "rejected"}
@@ -39,12 +41,39 @@ MARKET_DIMENSIONS = ["market_size", "growth", "segments", "customers", "competit
                      "channels", "regulation", "trade", "entry_barriers", "trends", "risks"]
 STATUSES = {"found", "partial", "not_found"}
 OFFICIAL_RE = re.compile(r"(^|\.)(gov|gob|gouv|govt|go|gc|mil)(\.[a-z]{2})?$")
-SECOND_LEVEL = {"co", "com", "gov", "org", "net", "edu", "ac", "gob", "gouv", "go"}
+# İki hərfli ölkə domenlərində ikinci səviyyə sonluqları (com.tr, co.jp, or.jp, ac.uk, gov.au ...)
+SECOND_LEVEL = {"co", "com", "gov", "org", "net", "edu", "ac", "gob", "gouv", "go", "or", "ne", "gen", "bel",
+                "ltd", "plc", "sch", "mil", "nic", "int", "res", "biz", "info", "gv", "govt", "nom", "web",
+                "k12", "police", "med", "mod", "nhs"}
+# Paylaşılan hostinq: hər alt domen ayrı sahibdir (a.blogspot.com və b.blogspot.com müstəqildir)
+SHARED_HOSTS = ("blogspot.com", "github.io", "gitlab.io", "wordpress.com", "substack.com", "medium.com",
+                "tumblr.com", "netlify.app", "vercel.app", "pages.dev", "herokuapp.com", "azurewebsites.net",
+                "web.app", "firebaseapp.com", "appspot.com", "wixsite.com", "weebly.com", "livejournal.com")
+# Sağdan-sola yazı istiqaməti işarələri; sitat və ədəd müqayisəsində atılır
+DIR_MARKS = dict.fromkeys(map(ord, "\u200e\u200f\u061c\u202a\u202b\u202c\u202d\u202e\u2066\u2067\u2068\u2069"))
 
 
 # ---------- mətn və ədəd ----------
+def to_ascii(s):
+    """NFKC, istiqamət işarələrini at, ərəb/fars/hind rəqəmlərini və ərəb ayırıcılarını ASCII-yə çevir."""
+    s = unicodedata.normalize("NFKC", str(s)).translate(DIR_MARKS)
+    if s.isascii():
+        return s
+    out = []
+    for ch in s:
+        if ch == "\u066b":      # ərəb onluq ayırıcısı
+            out.append(".")
+        elif ch == "\u066c":    # ərəb minlik ayırıcısı
+            out.append(",")
+        elif not ch.isascii() and unicodedata.decimal(ch, None) is not None:
+            out.append(str(unicodedata.decimal(ch)))
+        else:
+            out.append(ch)
+    return "".join(out)
+
+
 def norm_text(s):
-    s = unicodedata.normalize("NFKC", s)
+    s = to_ascii(s)
     for q in "“”„«»":
         s = s.replace(q, '"')
     s = s.replace("’", "'").replace("‘", "'")
@@ -52,7 +81,7 @@ def norm_text(s):
 
 
 def norm_num(s):
-    s = unicodedata.normalize("NFKC", str(s))
+    s = to_ascii(s)
     for ch in SPACES + " ":
         s = s.replace(ch, "")
     return s.replace(",", ".").strip(".")
@@ -64,28 +93,91 @@ NUM_RE = re.compile(r"\d{1,3}(?:%s\d{3})+(?:[.,]\d+)?|\d+(?:[.,]\d+)*" % SP)
 
 def raw_numbers(text):
     """Ədədləri yazıldığı kimi qaytarır. Boşluq yalnız minlik ayırıcı kimi qəbul olunur."""
-    return [m.group() for m in NUM_RE.finditer(unicodedata.normalize("NFKC", text))]
+    return [m.group() for m in NUM_RE.finditer(to_ascii(text))]
 
 
 def numbers_in(text):
     return [norm_num(n) for n in raw_numbers(text)]
 
 
+def canon(raw):
+    """Ədədin mümkün mənaları (onluq nöqtə ilə, minlik ayırıcısız).
+
+    '1,234,567.89' və '1.234.567,89' -> {'1234567.89'}; '58 997,7' -> {'58997.7'};
+    '1,234' birmənalı deyil (ingilis 1234, alman 1,234) -> iki məna.
+    """
+    s = to_ascii(raw)
+    for ch in SPACES + " ":
+        s = s.replace(ch, "")
+    s = s.strip(".,")
+    seps = [c for c in s if c in ".,"]
+    if not s or not seps:
+        return {s} if s else set()
+    if "," in s and "." in s:
+        k = max(s.rfind(","), s.rfind("."))
+        d, ip = s[k], s[:k]
+        g = "," if d == "." else "."
+        if d in ip or not re.fullmatch(r"\d{1,3}(?:\%s\d{3})*" % g, ip):
+            return {norm_num(raw)}
+        return {ip.replace(g, "") + "." + s[k + 1:]}
+    c = seps[0]
+    if len(seps) > 1:
+        return {s.replace(c, "")} if re.fullmatch(r"\d{1,3}(?:\%s\d{3})+" % c, s) else {norm_num(raw)}
+    ip, fr = s.split(c)
+    if len(fr) == 3 and 1 <= len(ip) <= 3 and ip != "0":
+        return {ip + fr, ip + "." + fr}
+    return {ip + "." + fr}
+
+
+def same_number(a, b):
+    """Eyni yazılış və ya hər ikisi birmənalıdır və eyni ədəddir. '1234567.89' = '1,234,567.89',
+    amma '1234' != '1,234' (sonuncu 1,234 də ola bilər)."""
+    if norm_num(a) == norm_num(b):
+        return True
+    ca, cb = canon(a), canon(b)
+    return len(ca) == 1 and ca == cb
+
+
+def _sub_runs(raw):
+    """'30 439 102' kimi ardıcıl tam ədədlərin alt hissələri."""
+    toks = re.split(SP, raw)
+    if len(toks) > 2 and not re.search(r"[.,]", raw):
+        for i in range(len(toks)):
+            for j in range(i + 1, len(toks) + 1):
+                if (i, j) != (0, len(toks)):
+                    yield "".join(toks[i:j])
+
+
 def value_in(value, text):
     """Dəyər mətndə ayrıca ədəd kimi keçirmi. '58 997,7 103,7' iki ədəddir."""
-    v = norm_num(value)
-    if not v:
+    if not norm_num(value):
         return False
     for raw in raw_numbers(text):
-        if norm_num(raw) == v:
+        if same_number(value, raw):
             return True
-        toks = re.split(SP, raw)
-        if len(toks) > 2 and not re.search(r"[.,]", raw):
-            for i in range(len(toks)):
-                for j in range(i + 1, len(toks) + 1):
-                    if norm_num("".join(toks[i:j])) == v:
-                        return True
+        if any(norm_num(t) == norm_num(value) for t in _sub_runs(raw)):
+            return True
     return False
+
+
+def ambiguous_match(value, text):
+    """Dəyər mətndə yalnız '30 439 102' kimi ardıcıl tam ədədlərin bir hissəsi kimi keçir.
+    Bu, '30 439' və '102' iki ayrı ədəd də ola bilər, '30 439 102' bir ədəd də; insan baxmalıdır."""
+    sub = False
+    for raw in raw_numbers(text):
+        if same_number(value, raw):
+            return False
+        sub = sub or any(norm_num(t) == norm_num(value) for t in _sub_runs(raw))
+    return sub
+
+
+def copied_quote(a, b):
+    """İki sitat eyni mətndir (köçürmə əlaməti): durğu işarələri və registr nəzərə alınmır."""
+    x, y = (re.sub(r"[\W_]+", "", norm_text(q)) for q in (a, b))
+    if not x or not y:
+        return False
+    short, long_ = sorted((x, y), key=len)
+    return short == long_ or (len(short) >= 30 and short in long_)
 
 
 def splits_into(raw, allowed):
@@ -121,8 +213,27 @@ def html_to_text(raw):
     return html.unescape(raw)
 
 
+def looks_js_only(raw, text):
+    """Səhifənin məzmunu JavaScript ilə yüklənir: görünən mətn azdır, skript və ya tətbiq konteyneri var."""
+    words = len(text.split())
+    # adi <script> teqi yetərli deyil: kiçik statik səhifələrdə də olur
+    marks = re.search(r'(?i)id=["\'](__next|__nuxt|root|app)["\']|enable javascript|javascript (is )?required', raw or "")
+    return words < 80 and bool(marks)
+
+
+def quote_in_scripts(quote, raw):
+    """Sitat səhifənin skript datasında (məsələn, Next.js __NEXT_DATA__ JSON-u) keçirmi."""
+    blobs = re.findall(r"(?is)<script\b[^>]*>(.*?)</script>", raw or "")
+    if not blobs:
+        return False
+    s = " ".join(blobs)
+    s = re.sub(r"\\u([0-9a-fA-F]{4})", lambda m: chr(int(m.group(1), 16)), s)
+    s = html.unescape(s.replace('\\"', '"').replace("\\n", " ").replace("\\/", "/"))
+    return norm_text(quote) in norm_text(s)
+
+
 def fetch(url, timeout=25):
-    """(status, text, qeyd) qaytarır."""
+    """(status, text, qeyd, xam_html) qaytarır."""
     req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept-Language": "*"})
     try:
         with urllib.request.urlopen(req, timeout=timeout) as r:
@@ -130,25 +241,25 @@ def fetch(url, timeout=25):
             ctype = (r.headers.get("Content-Type") or "").lower()
             body = r.read(15_000_000)
     except urllib.error.HTTPError as e:
-        return e.code, "", "HTTP %s" % e.code
+        return e.code, "", "HTTP %s" % e.code, ""
     except Exception as e:
-        return 0, "", "%s: %s" % (type(e).__name__, e)
+        return 0, "", "%s: %s" % (type(e).__name__, e), ""
     if "pdf" in ctype or url.lower().split("?")[0].endswith(".pdf"):
         try:
             from pypdf import PdfReader
         except ImportError:
-            return status, "", "PDF oxunmadı (pip install pypdf)"
+            return status, "", "PDF oxunmadı (pip install pypdf)", ""
         try:
             pages = PdfReader(io.BytesIO(body)).pages
-            return status, " ".join((p.extract_text() or "") for p in pages), ""
+            return status, " ".join((p.extract_text() or "") for p in pages), "", ""
         except Exception as e:
-            return status, "", "PDF oxunmadı: %s" % e
+            return status, "", "PDF oxunmadı: %s" % e, ""
     m = re.search(r"charset=([\w-]+)", ctype)
     try:
         text = body.decode(m.group(1) if m else "utf-8", errors="replace")
     except LookupError:
         text = body.decode("utf-8", errors="replace")
-    return status, (text if "json" in ctype else html_to_text(text)), ""
+    return status, (text if "json" in ctype else html_to_text(text)), "", text
 
 
 # ---------- mənbə keyfiyyəti ----------
@@ -157,9 +268,12 @@ def host_of(url):
 
 
 def registrable(host):
-    """Müstəqillik müqayisəsi üçün əsas domen (sadələşdirilmiş)."""
+    """Müstəqillik müqayisəsi üçün əsas domen (Public Suffix List-in sadələşdirilmiş forması)."""
     if not host or re.fullmatch(r"[\d.]+", host) or "." not in host:
         return host
+    for sh in SHARED_HOSTS:
+        if host.endswith("." + sh):
+            return host[: -len(sh) - 1].split(".")[-1] + "." + sh
     p = host.split(".")
     if len(p) >= 3 and len(p[-1]) == 2 and p[-2] in SECOND_LEVEL:
         return ".".join(p[-3:])
@@ -199,8 +313,16 @@ def strip_for_scan(md):
     return md
 
 
+def heading_re(names, mark):
+    return r"^##\s*(?:(?:%s)\s*|[^\n]*<!--\s*%s\s*-->\s*)$" % ("|".join(map(re.escape, names)), mark)
+
+
+def has_crit_heading(md):
+    return bool(re.search("(?m)" + heading_re(CRIT_HEADINGS, CRIT_MARK), md))
+
+
 def key_table_rows(md):
-    pat = r"(?ms)^##\s*(?:%s)\s*$(.*?)(?=^##\s|\Z)" % "|".join(map(re.escape, KEY_HEADINGS))
+    pat = "(?ms)" + heading_re(KEY_HEADINGS, KEY_MARK) + r"(.*?)(?=^##\s|\Z)"
     m = re.search(pat, md)
     if not m:
         return None
@@ -239,7 +361,7 @@ class Run:
         if not value_in(value, quote):
             self.bad("RƏQƏM SİTATDA YOXDUR: %s = %s, sitat: \"%s\"" % (label, value, quote[:120]))
             return False
-        status, text, note = self.page(url)
+        status, text, note, raw = self.page(url)
         if status != 200:
             self.bad("LİNK İŞLƏMİR (%s): %s" % (note or status, url))
             return False
@@ -247,6 +369,13 @@ class Run:
             self.bad("%s: %s" % (note, url))
             return False
         if norm_text(quote) not in norm_text(text):
+            if quote_in_scripts(quote, raw):
+                self.lines.append("  · qeyd: sitat səhifənin skript datasında tapıldı (JavaScript səhifəsi)")
+                return True
+            if looks_js_only(raw, text):
+                self.bad("SƏHİFƏ JAVASCRIPT İLƏ YÜKLƏNİR, sitat yoxlanıla bilmir: %s. Eyni datanın statik "
+                         "səhifəsini, PDF-ini və ya API-sini tap" % url)
+                return False
             self.bad("SİTAT TAPILMADI mənbə səhifəsində: %s \"%s\"" % (url, quote[:120]))
             return False
         return True
@@ -293,7 +422,7 @@ def verify(report_path, delay=1.0, out=sys.stdout):
     R = Run(delay)
     scan = strip_for_scan(md)
     allowed = set()
-    st = {"facts": 0, "verified": 0, "estimates": 0, "tiers": {}, "manual_tier": [], "key": 0,
+    st = {"ambiguous": [], "facts": 0, "verified": 0, "estimates": 0, "tiers": {}, "manual_tier": [], "key": 0,
           "key_primary": 0, "key_corroborated": 0, "stale": [], "discrepancies": []}
 
     for i, f in enumerate(findings, 1):
@@ -354,6 +483,10 @@ def verify(report_path, delay=1.0, out=sys.stdout):
             if registrable(host_of(c.get("source_url", ""))) == base:
                 R.bad("MÜSTƏQİL DEYİL: %s əsas mənbə ilə eyni domendədir (%s)" % (lab, base))
                 continue
+            if copied_quote(f.get("quote", ""), c.get("quote", "")):
+                R.bad("MÜSTƏQİL DEYİL: %s, sitat əsas mənbədəki sitatla eynidir (köçürmə əlaməti). "
+                      "Rəqəmi özü ölçən başqa qurum tap" % lab)
+                continue
             c_ok = R.check_source(lab, c.get("value"), c.get("source_url", ""), c.get("quote", ""))
             c_tier, c_how = R.check_tier(lab, c)
             if c_tier and c_how == "əsaslandırma":
@@ -396,19 +529,24 @@ def verify(report_path, delay=1.0, out=sys.stdout):
             elif tier:
                 R.bad("ƏSAS RƏQƏM TƏK MƏNBƏYƏ SÖYKƏNİR: %s (%d səviyyə). İlkin rəsmi mənbə tap və ya "
                       "müstəqil ikinci mənbə ilə təsdiqlə (corroboration)" % (name, tier))
+        if src_ok and ambiguous_match(f.get("value"), f.get("quote", "")):
+            st["ambiguous"].append("%s = %s, sitat: \"%s\"" % (name, f.get("value"), f.get("quote", "")[:120]))
         if src_ok and len(R.problems) == n0:
             st["verified"] += 1
             R.ok("TƏSDİQLƏNDİ" + (" (+%d müstəqil mənbə)" % good_corr if good_corr else ""))
 
     # hesabat mətni
     R.lines.append("[hesabat mətni]")
+    allowed_canon = {next(iter(canon(a))) for a in allowed if len(canon(a)) == 1}
     stray = sorted({norm_num(r) for r in set(raw_numbers(scan))
-                    if norm_num(r) not in allowed and not trivial(norm_num(r)) and not splits_into(r, allowed)})
+                    if norm_num(r) not in allowed and not trivial(norm_num(r)) and not splits_into(r, allowed)
+                    and not (len(canon(r)) == 1 and canon(r) <= allowed_canon)})
     for n in stray:
         R.bad("MƏNBƏSİZ RƏQƏM hesabatda (findings.json-da yoxdur): %s" % n)
     rows = key_table_rows(md)
     if rows is None:
-        R.bad("Əsas rəqəmlər bölməsi yoxdur (başlıq bunlardan biri olmalıdır: %s)" % ", ".join("## " + h for h in KEY_HEADINGS))
+        R.bad("Əsas rəqəmlər bölməsi yoxdur (başlıq bunlardan biri olmalıdır: %s; başqa dildə başlığın sonuna "
+              "<!-- %s --> yaz)" % (", ".join("## " + h for h in KEY_HEADINGS), KEY_MARK))
     else:
         for r in rows:
             if "](http" not in r and not any(k in r for k in EST_MARKS):
@@ -497,8 +635,9 @@ def verify(report_path, delay=1.0, out=sys.stdout):
             R.bad("ƏN ZƏİF FƏRZİYYƏ GÖSTƏRİLMƏYİB: assumptions siyahısında birinə \"weakest\": true yaz")
         else:
             crit["weakest"] = str(weak[0]["text"]).strip()
-        if not re.search(r"(?m)^##\s*(?:%s)\s*$" % "|".join(map(re.escape, CRIT_HEADINGS)), md):
-            R.bad("Tənqid bölməsi yoxdur (başlıq bunlardan biri olmalıdır: %s)" % ", ".join("## " + h for h in CRIT_HEADINGS))
+        if not has_crit_heading(md):
+            R.bad("Tənqid bölməsi yoxdur (başlıq bunlardan biri olmalıdır: %s; başqa dildə başlığın sonuna "
+                  "<!-- %s --> yaz)" % (", ".join("## " + h for h in CRIT_HEADINGS), CRIT_MARK))
         if len(R.problems) == n0:
             R.ok("tənqid: %d etiraz (%d qəbul, %d qismən, %d rədd), əks mövqe və ən zəif fərziyyə var"
                  % (crit["n"], crit["accepted"], crit["partially"], crit["rejected"]))
@@ -518,6 +657,8 @@ def verify(report_path, delay=1.0, out=sys.stdout):
         q += ["## Əks mövqe", crit["counter"], ""]
     for title, arr in (("İnsan baxmalıdır: səviyyəsi siyahı ilə yox, əsaslandırma ilə qəbul edilən mənbələr", st["manual_tier"]),
                        ("İnsan baxmalıdır: Rədd edilmiş ciddi etirazlar", crit["rejected_high"]),
+                       ("İnsan baxmalıdır: dəyər ardıcıl tam ədədlərin bir hissəsidir (məs. '30 439 102'), "
+                        "sərhəd qeyri-müəyyəndir", st["ambiguous"]),
                        ("Köhnə data", st["stale"]), ("Mənbələr arası fərqlər", st["discrepancies"]),
                        ("Boşluqlar", cov["gaps"]), ("Problemlər", R.problems)):
         if arr:
