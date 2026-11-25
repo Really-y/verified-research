@@ -1,0 +1,12 @@
+{
+  "name": "verified-research",
+  "owner": {"name": "Yusif Ezizov / Azedev"},
+  "description": "Claude Code plugins by Azedev: verified-research checks every figure in a research report against its source",
+  "plugins": [
+    {
+      "name": "verified-research",
+      "source": "./",
+      "description": "Sourced, machine-verified research for any country and topic: every figure is checked against its source"
+    }
+  ]
+}
