@@ -213,6 +213,19 @@ def html_to_text(raw):
     return html.unescape(raw)
 
 
+def _glue_letters(s):
+    """Hərflər arasındakı boşluqları atır, rəqəmlərin ətrafındakıları saxlayır."""
+    return re.sub(r"(?<=[^\W\d_])\s+(?=[^\W\d_])", "", s)
+
+
+def quote_in_text(quote, text):
+    """Sitat mətndə keçirmi. PDF mətnində sözlərin içinə boşluq düşə bilər ('real ifad ədə',
+    'pə rakəndə'); ona görə hərflər arasındakı boşluqlar nəzərə alınmadan da müqayisə edilir.
+    Rəqəmlərin ətrafındakı boşluqlar saxlanır ki, '3,7' ilə '13,7' qarışmasın."""
+    q, t = norm_text(quote), norm_text(text)
+    return q in t or _glue_letters(q) in _glue_letters(t)
+
+
 def looks_js_only(raw, text):
     """Səhifənin məzmunu JavaScript ilə yüklənir: görünən mətn azdır, skript və ya tətbiq konteyneri var."""
     words = len(text.split())
@@ -234,8 +247,8 @@ def quote_in_scripts(quote, raw):
 
 def fetch(url, timeout=25):
     """(status, text, qeyd, xam_html) qaytarır."""
-    req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept-Language": "*"})
     try:
+        req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept-Language": "*"})
         with urllib.request.urlopen(req, timeout=timeout) as r:
             status = r.status
             ctype = (r.headers.get("Content-Type") or "").lower()
@@ -368,7 +381,7 @@ class Run:
         if note:
             self.bad("%s: %s" % (note, url))
             return False
-        if norm_text(quote) not in norm_text(text):
+        if not quote_in_text(quote, text):
             if quote_in_scripts(quote, raw):
                 self.lines.append("  · qeyd: sitat səhifənin skript datasında tapıldı (JavaScript səhifəsi)")
                 return True

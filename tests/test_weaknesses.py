@@ -81,4 +81,15 @@ nx = ('<html><body><div id="__next"></div><script id="__NEXT_DATA__" type="appli
 ok(V.quote_in_scripts("bazarın həcmi 480 milyon manatdır", nx), "sitat Next.js datasında")
 ok(not V.quote_in_scripts("bazarın həcmi 999 milyon manatdır", nx), "uydurma sitat skript datasında da yoxdur")
 
+# 8. Real sınaqda tapıldı (critic, DSK PDF): PDF mətnində sözlərin içinə boşluq düşür
+#    ('real ifad ədə 3,7 faiz', 'pə rakəndə'); düzgün sitat rədd edilməməlidir
+pdf = "dəyəri əvvəlki ill ə müqayisədə real ifad ədə 3,7 faiz artaraq ümumi pə rakəndə ticarət"
+ok(V.quote_in_text("real ifadədə 3,7 faiz artaraq ümumi pərakəndə ticarət", pdf), "PDF-də sözün içində boşluq")
+ok(not V.quote_in_text("real ifadədə 3,9 faiz artaraq", pdf), "fərqli rəqəm yenə rədd edilir")
+ok(not V.quote_in_text("real ifadədə 13,7 faiz", pdf), "boşluqsuz müqayisə rəqəm sərhədini pozmamalıdır")
+
+# 9. Real sınaqda tapıldı: pozuq URL skripti çökdürürdü (fetch ValueError)
+st, txt, note, raw = V.fetch("example.com/yoxdur")
+ok(st == 0 and note, "pozuq URL problem kimi qaytarılır, çökmür")
+
 print("KEÇDİ   zəif yerlər (%d yoxlama)" % n)
