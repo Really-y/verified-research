@@ -173,6 +173,12 @@ def value_in(value, text):
     """Dəyər mətndə ayrıca ədəd kimi keçirmi. '58 997,7 103,7' iki ədəddir."""
     if not norm_num(value):
         return False
+    if len(raw_numbers(value)) > 1:
+        # bir neçə ədəddən ibarət dəyər (tarix: "November 8, 2029", "2032-04-30", "8 noyabr 2029"; versiya "8.4 LTS"):
+        # mətndə bütöv halda, kənarlarında rəqəm olmadan keçməlidir
+        v = re.escape(norm_text(value))
+        if re.search(r"(?<![\d.,])%s(?![\d]|[.,]\d)" % v, norm_text(text)):
+            return True
     for raw in raw_numbers(text):
         if same_number(value, raw):
             return True
