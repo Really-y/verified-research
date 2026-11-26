@@ -92,4 +92,17 @@ ok(not V.quote_in_text("real ifadədə 13,7 faiz", pdf), "boşluqsuz müqayisə 
 st, txt, note, raw = V.fetch("example.com/yoxdur")
 ok(st == 0 and note, "pozuq URL problem kimi qaytarılır, çökmür")
 
+# 10. Real sınaqda tapıldı (hədəf bazar): UN Comtrade 429 və bağlantı qırılması ölü link kimi rədd edilirdi
+_orig, _sleep = V._fetch_once, V.time.sleep
+V.time.sleep = lambda s: None
+calls = []
+V._fetch_once = lambda u, timeout=25: (calls.append(1) or ((429, "", "HTTP 429", "") if len(calls) < 3 else (200, "mətn", "", "mətn")))
+ok(V.fetch("http://x")[0] == 200 and len(calls) == 3, "429 cavabında gözləyib təkrar cəhd edir")
+calls.clear(); V._fetch_once = lambda u, timeout=25: (calls.append(1) or (404, "", "HTTP 404", ""))
+ok(V.fetch("http://x")[0] == 404 and len(calls) == 1, "404 təkrarlanmır (ölü link dərhal rədd)")
+calls.clear(); V._fetch_once = lambda u, timeout=25: (calls.append(1) or (0, "", "URLError: Connection reset by peer", ""))
+r = V.fetch("http://x")
+ok(len(calls) == V.RETRIES + 1 and "müvəqqəti" in r[2], "bağlantı qırılmasında təkrar cəhd və müvəqqəti xəta qeydi")
+V._fetch_once, V.time.sleep = _orig, _sleep
+
 print("KEÇDİ   zəif yerlər (%d yoxlama)" % n)

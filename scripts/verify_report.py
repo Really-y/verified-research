@@ -272,8 +272,28 @@ def quote_in_scripts(quote, raw):
     return norm_text(quote) in norm_text(s)
 
 
+RETRY_STATUS = {429, 500, 502, 503, 504}
+RETRIES = int(os.environ.get("VERIFY_RETRIES", "3"))
+
+
 def fetch(url, timeout=25):
-    """(status, text, qeyd, xam_html) qaytarır."""
+    """(status, text, qeyd, xam_html) qaytarır. Müvəqqəti xətalarda (429, 5xx, bağlantı qırılması)
+    gözləyib yenidən cəhd edir: real sınaqda UN Comtrade API-nin 429 cavabı ölü link kimi rədd edilirdi."""
+    for attempt in range(RETRIES + 1):
+        r = _fetch_once(url, timeout)
+        status, note = r[0], r[2]
+        transient = status in RETRY_STATUS or (status == 0 and re.search(
+            r"(?i)reset|timed? ?out|temporar|refused|remote end closed|incomplete", note or ""))
+        if not transient or attempt == RETRIES:
+            if transient and attempt:
+                r = (r[0], r[1], "%s, %d təkrar cəhddən sonra (müvəqqəti xəta ola bilər)" % (note, attempt), r[3])
+            return r
+        wait = min(2 ** attempt * 3, 30)
+        time.sleep(wait)
+    return r
+
+
+def _fetch_once(url, timeout=25):
     try:
         req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept-Language": "*"})
         with urllib.request.urlopen(req, timeout=timeout) as r:
