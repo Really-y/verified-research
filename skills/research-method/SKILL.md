@@ -26,6 +26,12 @@ allowed-tools: Bash(python3 "${CLAUDE_PLUGIN_ROOT}/scripts/fetch_text.py" *), Ba
 12. Böyük və ya qarışıq suallarda alt sualları subagentlərə **paralel** ver (bir mesajda bir neçə `Agent` çağırışı), növə uyğun: `verified-research:market-researcher`, `competitor-researcher`, `customer-researcher` (bazar, biznes), `literature-researcher` (elmi), `regulatory-researcher` (hüquq), `company-researcher` (şirkət, due diligence), `technical-researcher` (texniki), `policy-researcher` (siyasət). Hər subagentə ölkəni, dövrü, alt sualı və `research-types`-dakı həmin bölmələri ver. Yekunu `verified-research:report-editor` yığır.
 13. Hesabatın "Təhlil" bölməsini `research-types`-dakı növə uyğun təhlil üsulu ilə yaz; faktlar, təhlil və tövsiyələr ayrı bölmələrdə.
 
+## Alətlər və icazələr
+- Skriptləri **tək, sadə əmr** kimi çağır, tam yolla: `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/fetch_text.py" "<URL>" --grep "<söz>"`. `cd`, `;`, `&&`, boru (`|`) və `for` dövrləri ilə birləşdirmə: məhdud icazəli sessiyalarda belə əmrlər rədd edilir, sadə əmr isə icazə siyahısına düşür.
+- Bir Bash əmri rədd edilsə, Bash-ın tamamilə bağlı olduğunu fərz etmə: eyni skripti sadə formada yenidən çağır.
+- Skriptlər işləməsə belə `findings.json`, `coverage.json` və hesabatı **yenə yaz** (Write aləti ayrıdır) və hesabatda yoxlamanın işləmədiyini açıq qeyd et. Faylsız cavab vermə.
+- Mənbə avtomatik girişi bloklayırsa (403, robots.txt), bloku keçməyə çalışma (User-Agent, Referer dəyişmək və s.). Həmin sənədin başqa **rəsmi** nüsxəsini tap: tənzimləyicinin saytı (mərkəzi bankın bank hesabatları), birjanın açıqlama sistemi, rəsmi reyestr, rəsmi qəzet. Tapılmırsa, faktı `not_found` və ya "avtomatik yoxlanmayıb" kimi göstər.
+
 ## Mənbə keyfiyyəti sıralaması
 Eyni fakt üçün həmişə ən yuxarı səviyyəni seç:
 1. İlkin rəsmi mənbə: statistika qurumu, mərkəzi bank, gömrük, tənzimləyici, qanun mətni, məhkəmə qərarı, şirkətin rəsmi hesabatı (illik hesabat, birja bəyanatı)
