@@ -24,7 +24,7 @@ Sualı istənilən dildə yazın ("Almaniyada üzvi qida bazarı nə qədərdir?
 ## Tərkibi
 
 - Skill-lər: `research-method`, `research-types`, `source-quality`, `market-research`, `critical-review`, `source-map`, `research-tools`, `business-analysis`, `target-markets`, `competitor-watch`, `report-template`
-- Subagentlər: `market-researcher`, `competitor-researcher`, `customer-researcher`, `literature-researcher`, `regulatory-researcher`, `fact-checker`, `critic`, `report-editor`
+- Subagentlər: `market-researcher`, `competitor-researcher`, `customer-researcher`, `literature-researcher`, `regulatory-researcher`, `company-researcher`, `technical-researcher`, `policy-researcher`, `fact-checker`, `critic`, `report-editor`
 - Hook: `reports/*.md` yazılanda `scripts/verify_report.py` işə düşür; uğursuzluq Claude-a qaytarılır
 - Skriptlər: `verify_report.py` (yoxlama), `fetch_text.py` (mənbə mətnini yoxlamanın gördüyü kimi göstərir, hərfi sitat üçün), `save_findings.py` (SQLite və CSV)
 
@@ -39,7 +39,7 @@ Hər hesabat üçün skript bunları məcbur edir və `reports/<ad>.quality.md` 
 - nəticənin söykəndiyi əsas rəqəmlər ya rəsmi ilkin və ya beynəlxalq mənbədəndir, ya da başqa domendəki ikinci mənbə ilə təsdiqlənib;
 - mənbələr 10%-dən çox fərqlənirsə, səbəb yazılıb və hər iki rəqəm göstərilib;
 - 2 ildən köhnə data işarələnib;
-- bazar araşdırmasında on iki bölmənin hamısı əhatə siyahısındadır; tapılmayan hər bölmə üçün ən azı iki axtarış yeri göstərilib.
+- hər araşdırma növünün öz məcburi əhatə siyahısı var (`market` 12 bölmə; `business`, `target_markets`, `company`, `academic`, `legal`, `technical`, `policy`, `due_diligence` 6–8 bölmə; qarışıq sualda `["market", "legal"]` kimi birlikdə); tapılmayan hər bölmə üçün ən azı iki axtarış yeri göstərilib.
 
 - ayrı `critic` subagenti nəticəni sındırmağa çalışıb: ən azı üç etiraz, əks mövqe, ən zəif fərziyyə; hər etiraza yazılı cavab verilib. Rədd edilmiş ciddi etirazlar keyfiyyət xülasəsində sizə göstərilir.
 

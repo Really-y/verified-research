@@ -273,6 +273,37 @@ json.dump(b, open("reports/covnosearch.coverage.json", "w", encoding="utf-8"), e
 EOF
 check covmissing  1 "ƏHATƏ NATAMAM"
 check covnosearch 1 "AXTARIŞ YERİ GÖSTƏRİLMƏYİB"
+# hər araşdırma növünün öz məcburi bölmələri var (şirkət, elmi, hüquq, texniki, siyasət, yoxlama, biznes, hədəf bazar)
+echo "--- araşdırma növləri üzrə əhatə"
+for t in company academic legal technical policy due_diligence business target_markets mixed badtype other2 otherok; do
+  cp reports/corrok.md reports/cov_$t.md; cp reports/corrok.findings.json reports/cov_$t.findings.json; done
+python3 - "$ROOT" << 'EOF2'
+import json, sys
+sys.path.insert(0, sys.argv[1] + "/scripts")
+from verify_report import TYPE_DIMENSIONS as T
+def w(name, typ, items):
+    json.dump({"type": typ, "items": items}, open("reports/cov_%s.coverage.json" % name, "w", encoding="utf-8"), ensure_ascii=False)
+for t in ["company", "academic", "legal", "technical", "policy", "due_diligence", "business", "target_markets"]:
+    full = {d: {"status": "found"} for d in T[t]}
+    w(t, t, full)                                     # tam: keçir
+    del full[T[t][-1]]; w(t + "_miss", t, full)       # sonuncu bölmə çatmır: rədd
+both = {d: {"status": "found"} for d in T["market"] + T["legal"]}
+w("mixed", ["market", "legal"], both)
+both.pop("penalties"); w("mixed_miss", ["market", "legal"], both)
+w("badtype", "markt", {"a": {"status": "found"}, "b": {"status": "found"}, "c": {"status": "found"}})
+w("other2", "other", {"a": {"status": "found"}, "b": {"status": "found"}})
+w("otherok", "other", {"a": {"status": "found"}, "b": {"status": "found"}, "c": {"status": "found"}})
+EOF2
+for t in company academic legal technical policy due_diligence business target_markets mixed; do
+  check cov_$t 0 "YOXLAMA KEÇDİ"
+  cp reports/corrok.md reports/cov_${t}_miss.md; cp reports/corrok.findings.json reports/cov_${t}_miss.findings.json
+  check cov_${t}_miss 1 "ƏHATƏ NATAMAM"
+done
+check cov_badtype 1 "ARAŞDIRMA NÖVÜ TANINMIR"
+check cov_other2  1 "ən azı 3 alt sual"
+check cov_otherok 0 "YOXLAMA KEÇDİ"
+grep -q "Araşdırma növü: market + legal" reports/cov_mixed.quality.md && echo "KEÇDİ   qarışıq növ keyfiyyət xülasəsində göstərilir" || { echo "UĞURSUZ qarışıq növ xülasədə yoxdur"; FAIL=1; }
+
 [ -s reports/corrok.quality.md ] && grep -q "müstəqil mənbə ilə təsdiqlənib: 1" reports/corrok.quality.md \
   && grep -q "İnsan baxmalıdır" reports/corrok.quality.md && grep -q "sınaq: rəsmi qurum" reports/corrok.quality.md \
   && echo "KEÇDİ   keyfiyyət xülasəsi faylı yaradılır və əsaslandırılmış mənbələri insana göstərir" || { echo "UĞURSUZ keyfiyyət xülasəsi"; FAIL=1; }

@@ -9,7 +9,7 @@ allowed-tools: Bash(python3 "${CLAUDE_PLUGIN_ROOT}/scripts/fetch_text.py" *), Ba
 İstənilən ölkə, dil və mövzu üçün. Hesabatı istifadəçinin sual verdiyi dildə yaz.
 
 ## Addımlar
-1. Araşdırma növünü müəyyən et (`research-types`) və sualı alt suallara böl. Coğrafiyanı və dövrü dəqiqləşdir. **Əhatə siyahısını yaz** (`reports/<ad>.coverage.json`): bazar araşdırmasıdırsa `market-research`-dəki on iki bölmə, deyilsə alt sualların.
+1. Araşdırma növünü müəyyən et (`research-types` skill-ini çağır) və sualı alt suallara böl. Coğrafiyanı və dövrü dəqiqləşdir. **Əhatə siyahısını yaz** (`reports/<ad>.coverage.json`): `"type"` növün adıdır (`market`, `business`, `target_markets`, `company`, `academic`, `legal`, `technical`, `policy`, `due_diligence`, `other`) və ya qarışıq sualda siyahısı (`["market", "legal"]`); `items`-də həmin növün `research-types`-dakı bütün məcburi bölmələri olmalıdır (bazar üçün `market-research`-dəki on iki). `other` üçün ən azı üç alt sual.
 2. **Ölkə mənbə xəritəsi (məcburi).** Sual bir və ya bir neçə ölkəyə aiddirsə, hər ölkə üçün ISO2 kodunu müəyyən et və xəritəni oxu: əvvəlcə `${CLAUDE_PLUGIN_ROOT}/skills/source-map/references/countries/<ISO2>.md`, sonra iş qovluğunda `research-data/sources/<ISO2>.md`. **İkisi də yoxdursa, araşdırmadan əvvəl `research-data/sources/<ISO2>.md` faylını yarat**: `source-map` skill-indəki 8 bəndlik siyahı üzrə (statistika qurumu, mərkəzi bank, gömrük, reyestr, qanunvericilik bazası, vergi və tənzimləyicilər, birja, elan saytları), hər biri üçün rəsmi URL, data formatı (HTML/PDF/API) və status. Hər fakt tapıntısına `"country": "<ISO2>"` yaz; yoxlama skripti xəritəsi olmayan ölkəni rədd edir. Sonra hər alt sual üçün əvvəlcə xəritədəki və `${CLAUDE_PLUGIN_ROOT}/skills/source-map/references/global.md`-dəki ilkin mənbələrə bax, sonra ümumi veb axtarış. Alət seçimi üçün `research-tools`.
 3. Yerli mənbələri yerli dildə axtar (məsələn, Türkiyə üçün türkcə, Almaniya üçün almanca). İngiliscə xülasələr çox vaxt natamam və gecikmiş olur.
 4. Hər mənbəni `source-quality` ilə qiymətləndir. Hər rəqəm üçün tapıntı qeyd et: göstərici, dəyər, vahid, valyuta, dövr, ölkə, mənbə URL-i, **mənbədəki hərfi sitat**, baxış tarixi.
@@ -20,7 +20,8 @@ allowed-tools: Bash(python3 "${CLAUDE_PLUGIN_ROOT}/scripts/fetch_text.py" *), Ba
 9. Ölkələr arası müqayisədə valyutanı, ili və tərifi eyniləşdir; çevirmə məzənnəsinin mənbəyini və tarixini tapıntı kimi qeyd et.
 10. Hesabatı yazmazdan əvvəl `verified-research:fact-checker` subagentinə bütün əsas tapıntıları yoxlat; `düzəliş lazımdır` və `rədd` hökmlərini həll et.
 11. Qaralama hazır olanda `critical-review` skill-ini izlə: `verified-research:critic` nəticəni sındırmağa çalışır, sən hər etiraza yazılı cavab verirsən (`reports/<ad>.critique.json`).
-12. Böyük suallarda alt sualları subagentlərə paralel ver: `verified-research:market-researcher`, `competitor-researcher`, `customer-researcher`, `literature-researcher`, `regulatory-researcher`. Yekunu `verified-research:report-editor` yığır.
+12. Böyük və ya qarışıq suallarda alt sualları subagentlərə **paralel** ver (bir mesajda bir neçə `Agent` çağırışı), növə uyğun: `verified-research:market-researcher`, `competitor-researcher`, `customer-researcher` (bazar, biznes), `literature-researcher` (elmi), `regulatory-researcher` (hüquq), `company-researcher` (şirkət, due diligence), `technical-researcher` (texniki), `policy-researcher` (siyasət). Hər subagentə ölkəni, dövrü, alt sualı və `research-types`-dakı həmin bölmələri ver. Yekunu `verified-research:report-editor` yığır.
+13. Hesabatın "Təhlil" bölməsini `research-types`-dakı növə uyğun təhlil üsulu ilə yaz; faktlar, təhlil və tövsiyələr ayrı bölmələrdə.
 
 ## Mənbə keyfiyyəti sıralaması
 Eyni fakt üçün həmişə ən yuxarı səviyyəni seç:

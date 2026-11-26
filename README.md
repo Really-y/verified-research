@@ -38,7 +38,7 @@ or the source says something else. **verified-research** turns that number into 
 flowchart LR
     Q([Question]) --> M[research-method<br/>skill]
     M --> C[coverage.json<br/>checklist]
-    M --> R[Researcher agents<br/>market · competitor · customer<br/>literature · regulatory]
+    M --> R[Researcher agents<br/>market · competitor · customer · company<br/>literature · regulatory · technical · policy]
     R -->|verbatim quotes via<br/>fetch_text.py| F[findings.json]
     F --> FC[fact-checker agent]
     FC --> D[Draft report]
@@ -89,7 +89,7 @@ PATH="$PWD/.venv/bin:$PATH" claude --plugin-dir ./verified-research
 ## 🧩 What's inside
 
 <table>
-<tr><th>Skills (11)</th><th>Agents (8)</th><th>Scripts</th></tr>
+<tr><th>Skills (11)</th><th>Agents (11)</th><th>Scripts</th></tr>
 <tr valign="top"><td>
 
 - `research-method` (entry point)
@@ -111,6 +111,9 @@ PATH="$PWD/.venv/bin:$PATH" claude --plugin-dir ./verified-research
 - `customer-researcher`
 - `literature-researcher`
 - `regulatory-researcher`
+- `company-researcher`
+- `technical-researcher`
+- `policy-researcher`
 - `fact-checker`
 - `critic`
 - `report-editor`
@@ -138,7 +141,7 @@ Standard library + `pypdf` only.
 - ✅ **key figures** come from an official or international source, or are corroborated by an **independent** second source. A different domain is required, a copied quote is rejected, and shared hosts such as `*.blogspot.com` are handled;
 - ✅ sources that disagree by more than 10% need an explanation, and both numbers are shown;
 - ✅ stale data is flagged, estimates are marked (`ESTIMATE`) and need a formula and inputs;
-- ✅ coverage: all 12 market dimensions are listed, and each gap names at least two places that were searched;
+- ✅ coverage per research type: every type (`market`, `business`, `target_markets`, `company`, `academic`, `legal`, `technical`, `policy`, `due_diligence`, or a mix such as `["market", "legal"]`) has its own mandatory checklist (12 dimensions for a market study, 6–8 for the others), and each gap names at least two places that were searched;
 - ✅ critique: at least 3 objections, a counter-case, the weakest assumption, and a written response to each objection.
 
 It also detects JavaScript-only pages instead of silently failing, reads quotes from Next.js data blobs, and

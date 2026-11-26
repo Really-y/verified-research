@@ -41,6 +41,6 @@ Bazar araşdırması on iki bölmənin hamısını əhatə etməlidir. Araşdır
 - Heç bir bölməni "uyğun deyil" deyə atma; uyğun deyilsə, `not_found` yaz və səbəbini `searched`-də izah et.
 - Bölmələri subagentlərə paylaya bilərsən; yekunda `fact-checker` hər əsas rəqəmi yenidən yoxlayır.
 
-Bazar araşdırması olmayan işlərdə (`"type": "other"`) `items` sənin alt suallarındır, ən azı üç.
+Başqa növlərin (`business`, `company`, `academic`, `legal`, `technical`, `policy`, `due_diligence`, `target_markets`) məcburi bölmələri `research-types`-dadır. Qarışıq sualda `"type": ["market", "legal"]` yaz; skript hər iki siyahını tələb edir. Heç biri uyğun deyilsə (`"type": "other"`), `items` sənin alt suallarındır, ən azı üç.
 
 Başqa bölmələr: çərçivələr üçün `business-analysis`, ölkə seçimi üçün `target-markets`, mənbə qiymətləndirməsi üçün `source-quality`.

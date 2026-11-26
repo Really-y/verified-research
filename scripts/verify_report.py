@@ -39,6 +39,27 @@ AGREE_TOLERANCE = 0.10   # iki mənbə arasında icazəli nisbi fərq
 STALE_YEARS = 2          # bundan köhnə data işarələnməlidir
 MARKET_DIMENSIONS = ["market_size", "growth", "segments", "customers", "competitors", "pricing",
                      "channels", "regulation", "trade", "entry_barriers", "trends", "risks"]
+# Hər araşdırma növünün məcburi əhatə bölmələri (skills/research-types). Qarışıq sual: "type": ["market", "legal"]
+TYPE_DIMENSIONS = {
+    "market": MARKET_DIMENSIONS,
+    "business": ["market_size", "competition", "pricing", "costs", "unit_economics", "break_even",
+                 "scenarios", "risks"],
+    "target_markets": ["candidates", "criteria_weights", "comparable_data", "scoring",
+                       "shortlist_deep_dive", "sensitivity"],
+    "company": ["identity", "ownership", "financials", "business_model", "market_position",
+                "management", "legal_issues", "risks"],
+    "academic": ["search_strategy", "evidence_base", "main_findings", "study_quality",
+                 "conflicting_evidence", "gaps"],
+    "legal": ["applicable_law", "requirements", "current_version", "authority", "procedure",
+              "penalties", "upcoming_changes"],
+    "technical": ["versions", "specifications", "standards", "alternatives", "known_issues",
+                  "performance", "cost_licensing"],
+    "policy": ["definitions", "data_trend", "comparison", "methodology", "stakeholders",
+               "evidence_of_effects", "limitations"],
+    "due_diligence": ["registration", "ownership", "financials", "litigation", "sanctions",
+                      "licenses", "media", "claims_vs_evidence"],
+    "other": [],
+}
 STATUSES = {"found", "partial", "not_found"}
 OFFICIAL_RE = re.compile(r"(^|\.)(gov|gob|gouv|govt|go|gc|mil)(\.[a-z]{2})?$")
 # İki hərfli ölkə domenlərində ikinci səviyyə sonluqları (com.tr, co.jp, or.jp, ac.uk, gov.au ...)
@@ -593,12 +614,23 @@ def verify(report_path, delay=1.0, out=sys.stdout):
         except Exception as e:
             R.bad("coverage.json oxunmadı: %s" % e)
             items, cv = {}, {}
-        if cv.get("type") == "market":
-            missing = [d for d in MARKET_DIMENSIONS if d not in items]
-            if missing:
-                R.bad("ƏHATƏ NATAMAM: bazar araşdırmasında bu bölmələr yoxdur: %s" % ", ".join(missing))
-        elif items and len(items) < 3:
+        types = cv.get("type") or "other"
+        types = [types] if isinstance(types, str) else list(types)
+        unknown = [t for t in types if t not in TYPE_DIMENSIONS]
+        if unknown:
+            R.bad("ARAŞDIRMA NÖVÜ TANINMIR: %s (bunlardan biri və ya siyahısı: %s)"
+                  % (", ".join(map(str, unknown)), ", ".join(TYPE_DIMENSIONS)))
+        required = []
+        for t in types:
+            for d in TYPE_DIMENSIONS.get(t, []):
+                if d not in required:
+                    required.append(d)
+        missing = [d for d in required if d not in items]
+        if missing:
+            R.bad("ƏHATƏ NATAMAM: %s araşdırmasında bu bölmələr yoxdur: %s" % ("+".join(types), ", ".join(missing)))
+        if not required and items and len(items) < 3:
             R.bad("ƏHATƏ NATAMAM: ən azı 3 alt sual lazımdır")
+        cov["types"] = types
         for k, v in items.items():
             s = (v or {}).get("status")
             if s not in STATUSES:
@@ -673,6 +705,7 @@ def verify(report_path, delay=1.0, out=sys.stdout):
          "- Fakt tapıntıları: %d, mənbədə təsdiqləndi: %d; təxminlər: %d" % (st["facts"], st["verified"], st["estimates"]),
          "- Mənbə səviyyələri (1 ən yaxşı): " + (", ".join("%d-ci: %d" % (t, n) for t, n in sorted(st["tiers"].items())) or "yoxdur"),
          "- Əsas rəqəmlər: %d; ilkin və ya beynəlxalq rəsmi mənbədən: %d; müstəqil mənbə ilə təsdiqlənib: %d" % (st["key"], st["key_primary"], st["key_corroborated"]),
+         "- Araşdırma növü: %s" % " + ".join(cov.get("types") or ["?"]),
          "- Əhatə: %d tapıldı, %d qismən, %d tapılmadı" % (cov["found"], cov["partial"], cov["not_found"]),
          "- Tənqid: %d etiraz; %d qəbul, %d qismən, %d rədd" % (crit["n"], crit["accepted"], crit["partially"], crit["rejected"]), ""]
     if crit["weakest"]:
