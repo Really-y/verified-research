@@ -25,4 +25,9 @@ assert value_in("November 8, 2029", "17 17.12 Yes September 26, 2024 November 8,
 assert value_in("2032-04-30", '"eol":"2032-04-30"') and value_in("8 noyabr 2029", "8 noyabr 2029-cu il")
 assert not value_in("November 8, 2029", "November 18, 2029") and not value_in("2032-04-30", "2032-04-29")
 assert not value_in("2032-04-30", "2032-04-301") and not value_in("8 noyabr 2029", "18 noyabr 2029")
-print("KEÇDİ   ədəd tanıma (31 yoxlama)")
+# hüquq real sınağında tapıldı: söz ilə tarix və mənbə siyahısındakı identifikatorlar mənbəsiz rəqəm sayılırdı
+from verify_report import strip_for_scan, numbers_in
+t = ("- Komissiya 14 June 2028-ə qədər qəbul etməlidir; November 8, 2029; 8 noyabr 2029-cu il.\n"
+     "- [tariffnumber.com, 0409](https://x)\n- AQTA (Fərman № 1200)\nBazar 57,4 mlrd manat, 14 ölkə, June artımı 12,5%.")
+assert numbers_in(strip_for_scan(t)) == ["57.4", "14", "12.5"], numbers_in(strip_for_scan(t))
+print("KEÇDİ   ədəd tanıma (32 yoxlama)")

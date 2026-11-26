@@ -342,8 +342,23 @@ def known_tier(host, trusted):
     return best
 
 
+MONTHS = ("january|february|march|april|may|june|july|august|september|october|november|december|"
+          "jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec|"
+          "yanvar|fevral|mart|aprel|may|iyun|iyul|avqust|sentyabr|oktyabr|noyabr|dekabr|"
+          "ocak|şubat|mart|nisan|mayıs|haziran|temmuz|ağustos|eylül|ekim|kasım|aralık|"
+          "января|февраля|марта|апреля|мая|июня|июля|августа|сентября|октября|ноября|декабря")
+WORD_DATE_RE = re.compile(r"(?i)\b(?:\d{1,2}\.?\s+(?:%s)\.?(?:\s*,?\s*\d{4})?|(?:%s)\.?\s+\d{1,2}(?:\s*,\s*\d{4})?)(?!\w)"
+                          % (MONTHS, MONTHS))
+
+
 def strip_for_scan(md):
     md = re.sub(r"(?s)```.*?```", " ", md)
+    # mənbə siyahısında tək linkdən ibarət sətir: link mətnindəki nömrələr identifikatordur ("Fərman № 1200", "CN 0409")
+    md = re.sub(r"(?m)^\s*(?:[-*+]|\d+[.)])\s*\[[^\]\n]*\]\([^)\n]*\)\s*$", " ", md)
+    # sənəd nömrəsi: "№ 1200", "No. 765"
+    md = re.sub(r"(?:№|\bNo\.?|\bNr\.?)\s*\d[\w/-]*", " ", md)
+    # söz ilə yazılmış tarixlər ("14 June 2028", "November 8, 2029", "8 noyabr 2029") ISO tarixlər kimi skan edilmir
+    md = WORD_DATE_RE.sub(" ", md)
     md = re.sub(r"`[^`]*`", " ", md)
     md = re.sub(r"\]\([^)]*\)", "]", md)
     md = re.sub(r"https?://\S+", " ", md)
