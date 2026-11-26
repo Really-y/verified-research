@@ -75,6 +75,18 @@ Hüquq (Aİ bal) üçüncü dəfə, "tək sadə əmr" və "Bash rədd olunsa da 
 
 `bash tests/run_tests.sh`: 93 KEÇDİ, 0 UĞURSUZ. `claude plugin validate . --strict`: Validation passed (yeganə xəbərdarlıq: plugin ikonu yoxdur).
 
+### Təhlil keyfiyyəti: hər hesabatda növünə uyğun təhlil elementləri
+`research-types`-dakı təhlil üsuluna görə hər hesabatda 3–4 element yoxlanıldı: **35/35 var**, 9 hesabatın 9-da ayrıca tənqid bölməsi.
+- business: üç ssenari, zərərsizlik, həssaslıq, "nəyə etibar etmək olmaz"
+- target_markets: bal cədvəli, çəkilər, 8 çəki variantı ilə həssaslıq, eyni il və valyuta
+- company: üç illik dinamika, ROAE, sahiblik, risklər (törəmə şirkətdə fırıldaq, audit)
+- due_diligence: qeydiyyat, sanksiya siyahıları, məhkəmə və cərimələr, risk səviyyəsi
+- academic: sübutun gücü (wellbeing orta, məhsuldarlıq zəif), dizayn və n, ziddiyyətli sübut, ümumiləşdirmə həddi (özü seçilmiş firmalar)
+- legal: maddə nömrələri, konsolidə redaksiyanın tarixi, səlahiyyətli qurum, "yekun söz hüquqşünasındır"
+- technical: versiya və tarix, müqayisə cədvəli, lisenziya, hostinq modelinə görə tövsiyə
+- policy: tərif və metodologiya fərqi, müqayisənin şərti, 2020-dən trend, "Boşluqlar və risklər"
+- market + legal: iki yanaşma ilə təxmin, icazə addımları, boşluqlar
+
 ### Əl ilə dəqiqlik yoxlaması (şərt 0): 9 kateqoriyada 41 tapıntıdan 41-i düz
 Texniki (5), elmi (5), siyasət (5), biznes (5) hesabatlarından seçilmiş 20 tapıntını özüm mənbədə yoxladım: rəqəm, sitatın həmin göstəriciyə aid olması, daha yaxşı mənbə. **20/20 düzdür.** Diqqət tələb edən ikisi də düz çıxdı: Geostat sitatı "amounted to 18.5 percent" kontekstdə "the unemployment rate in Georgia … amounted to 18.5 percent"-dir; DSK ev təsərrüfatları büllitenində 28,8 manat 31-ci cədvəlin "Bakı şəhəri" sütunudur. Skriptin keçirdiyi, amma yanlış olan hal tapılmadı.
 
