@@ -433,7 +433,12 @@ class Run:
         if not url or not quote:
             self.bad("MƏNBƏSİZ (source_url və quote lazımdır): %s" % label)
             return False
-        if not value_in(value, quote):
+        if not raw_numbers(str(value)) and str(value).strip():
+            # mətn faktı (sahib, qurum adı, status): dəyər sitatda hərfi keçməlidir
+            if norm_text(value) not in norm_text(quote):
+                self.bad("DƏYƏR SİTATDA YOXDUR: %s = %s, sitat: \"%s\"" % (label, value, quote[:120]))
+                return False
+        elif not value_in(value, quote):
             self.bad("RƏQƏM SİTATDA YOXDUR: %s = %s, sitat: \"%s\"" % (label, value, quote[:120]))
             return False
         status, text, note, raw = self.page(url)
@@ -690,7 +695,7 @@ def verify(report_path, delay=1.0, out=sys.stdout):
     # tənqid
     R.lines.append("[tənqid]")
     critique_path = Path(str(stem) + ".critique.json")
-    crit = {"n": 0, "accepted": 0, "partially": 0, "rejected": 0, "rejected_high": [], "weakest": "", "counter": ""}
+    crit = {"author": "", "n": 0, "accepted": 0, "partially": 0, "rejected": 0, "rejected_high": [], "weakest": "", "counter": ""}
     if not critique_path.exists():
         R.bad("TƏNQİD FAYLI YOXDUR: %s. Hesabatı critic subagentinə ver" % critique_path.name)
     else:
@@ -701,6 +706,11 @@ def verify(report_path, delay=1.0, out=sys.stdout):
         except Exception as e:
             R.bad("critique.json oxunmadı: %s" % e)
             cr = {}
+        author = str(cr.get("author", "")).strip().lower()
+        crit["author"] = author
+        if author and author != "critic":
+            R.bad("TƏNQİD MÜSTƏQİL DEYİL: critique.json-u hesabatın müəllifi yazıb (author: %s). "
+                  "verified-research:critic subagentini işə sal" % author)
         objs = [o for o in (cr.get("objections") or []) if isinstance(o, dict)]
         if len(objs) < MIN_OBJECTIONS:
             R.bad("TƏNQİD NATAMAM: ən azı %d etiraz lazımdır, %d var" % (MIN_OBJECTIONS, len(objs)))
@@ -753,6 +763,9 @@ def verify(report_path, delay=1.0, out=sys.stdout):
         q += ["## Ən zəif fərziyyə", crit["weakest"], ""]
     if crit["counter"]:
         q += ["## Əks mövqe", crit["counter"], ""]
+    if critique_path.exists() and not crit["author"]:
+        q += ["## İnsan baxmalıdır: tənqidin müəllifi göstərilməyib",
+              "critique.json-da \"author\": \"critic\" yoxdur; tənqidin müstəqil critic subagentindən gəldiyi təsdiqlənmir.", ""]
     for title, arr in (("İnsan baxmalıdır: səviyyəsi siyahı ilə yox, əsaslandırma ilə qəbul edilən mənbələr", st["manual_tier"]),
                        ("İnsan baxmalıdır: Rədd edilmiş ciddi etirazlar", crit["rejected_high"]),
                        ("İnsan baxmalıdır: dəyər ardıcıl tam ədədlərin bir hissəsidir (məs. '30 439 102'), "

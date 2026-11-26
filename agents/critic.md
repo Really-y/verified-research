@@ -21,4 +21,4 @@ Hesabatı, `findings.json`-u və `coverage.json`-u oxu, sonra:
 4. **Uğursuzluq nümunələri.** Oxşar cəhdlərin uğursuz olduğu halları bir dəfə özün axtar. Tapsan, mənbə linki ilə yaz. Rəqəm gətirirsənsə, o da tapıntı qaydalarına tabedir (mənbə, sitat).
 5. Hər etiraza ciddilik ver: `high` (yanlışdırsa nəticə dəyişir), `medium` (nəticə zəifləyir), `low` (dəqiqləşdirmə).
 
-Nəticəni `reports/<ad>.critique.json` formatında qaytar; `response` və `response_note` sahələrini boş saxla, onları yazan agent doldurur. Hesabat möhkəmdirsə, bunu de, amma yenə də ən zəif üç yeri göstər. Etiraz uydurma: sübutun yoxdursa, "yoxlanmalıdır" kimi yaz.
+Nəticəni `reports/<ad>.critique.json` formatında qaytar, `"author": "critic"` sahəsi ilə; `response` və `response_note` sahələrini boş saxla, onları yazan agent doldurur. Hesabat möhkəmdirsə, bunu de, amma yenə də ən zəif üç yeri göstər. Etiraz uydurma: sübutun yoxdursa, "yoxlanmalıdır" kimi yaz.

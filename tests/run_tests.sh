@@ -12,6 +12,7 @@ dims = ["market_size", "growth", "segments", "customers", "competitors", "pricin
         "channels", "regulation", "trade", "entry_barriers", "trends", "risks"]
 json.dump({"type": "market", "items": {d: {"status": "found"} for d in dims}}, open("default.coverage.json", "w"))
 json.dump({
+    "author": "critic",
     "assumptions": [{"text": "Tələb növbəti üç ildə indiki tempdə artacaq", "weakest": True},
                     {"text": "Tənzimləmə dəyişməyəcək"}],
     "counter_case": "Bazar artıq doymuş ola bilər: artım yalnız qiymət artımından gəlir, həcm sabitdir.",
@@ -32,7 +33,7 @@ cat > site/stat.html << 'EOF'
 </body></html>
 EOF
 (cd site && exec python3 -m http.server $PORT >/dev/null 2>&1) & SRV=$!
-trap 'kill $SRV 2>/dev/null; rm -rf "$W"' EXIT
+trap 'kill $SRV 2>/dev/null; [ -n "${KEEP:-}" ] || rm -rf "$W"' EXIT
 sleep 1
 cat > reports/good.findings.json << EOF
 [
@@ -350,6 +351,29 @@ check noheading  1 "Tənqid bölməsi yoxdur"
 check rejected   0 "tənqid: 3 etiraz"
 grep -q "Rədd edilmiş ciddi etirazlar" reports/rejected.quality.md && grep -q "rəqib artıq bazardadır" reports/rejected.quality.md \
   && echo "KEÇDİ   rədd edilmiş ciddi etiraz keyfiyyət xülasəsində insana göstərilir" || { echo "UĞURSUZ rədd edilmiş etiraz göstərilmir"; FAIL=1; }
+
+# şirkət real sınağında tapıldı: model tənqidi özü yazdı; mətn faktı (sahiblər) rədd edilirdi
+crit selfcrit 'd["author"] = "self"'
+check selfcrit 1 "TƏNQİD MÜSTƏQİL DEYİL"
+crit noauthor 'del d["author"]'
+check noauthor 0 "YOXLAMA KEÇDİ"
+grep -q "tənqidin müəllifi göstərilməyib" reports/noauthor.quality.md && echo "KEÇDİ   müəllifsiz tənqid insana göstərilir" || { echo "UĞURSUZ müəllifsiz tənqid xülasədə yoxdur"; FAIL=1; }
+cat > site/owner.html << 'EOF2'
+<html><body><p>PASHA Holding is owned by the Aliyev and Pashayev families in Azerbaijan.</p></body></html>
+EOF2
+for t in textok textbad; do cp reports/good.md reports/$t.md; done
+python3 - "$B" << 'EOF2'
+import json, sys
+B = sys.argv[1]
+g = json.load(open("reports/good.findings.json", encoding="utf-8"))
+f = {"indicator": "Sahiblər", "value": "Aliyev and Pashayev families", "source_url": B + "/owner.html",
+     "quote": "PASHA Holding is owned by the Aliyev and Pashayev families in Azerbaijan.", "type": "fact", "source_tier": 3, "tier_reason": "sınaq"}
+json.dump(g + [f], open("reports/textok.findings.json", "w", encoding="utf-8"), ensure_ascii=False)
+f2 = dict(f, value="Smith family")
+json.dump(g + [f2], open("reports/textbad.findings.json", "w", encoding="utf-8"), ensure_ascii=False)
+EOF2
+check textok  0 "YOXLAMA KEÇDİ"
+check textbad 1 "DƏYƏR SİTATDA YOXDUR"
 
 echo "--- zəif yerlər (GOAL şərt 9)"
 python3 "$ROOT/tests/test_weaknesses.py" || FAIL=1

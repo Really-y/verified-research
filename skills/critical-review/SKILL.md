@@ -18,9 +18,12 @@ Hesabatı yazan özünü tənqid edə bilmir. Buna görə tənqidi ayrı subagen
 5. Hesabata `## Tənqid və əks mövqe` bölməsi əlavə et: ən zəif fərziyyə, əks mövqe, əsas etirazlar və cavabların. Rədd etdiyin etirazları da göstər ki, oxucu özü qərar versin.
 6. Tənqiddən sonra əminlik səviyyəni yenidən yaz: yüksək / orta / aşağı və niyə.
 
+Tənqidi **özün yazma**. `Agent` aləti bu sessiyada yoxdursa və ya critic işləmirsə, critique.json-a `"author": "self"` yaz: skript bunu müstəqil olmayan tənqid kimi rədd edir və istifadəçi bunu görür. Bunu gizlətmə.
+
 ## critique.json formatı
 ```json
-{"assumptions": [
+{"author": "critic",
+ "assumptions": [
    {"text": "Tələb növbəti üç ildə indiki tempdə artacaq", "weakest": true},
    {"text": "İdxal rüsumu dəyişməyəcək"}],
  "counter_case": "Bazar artıq doymuş ola bilər: artım qiymət artımından gəlir, həcm sabitdir.",
