@@ -39,6 +39,10 @@ Bütün 9 araşdırma ssenarisində `research-method` və `research-types` avtom
 6. **`coverage.json`-da `covered` statusu** (şirkət): model `found` əvəzinə `covered` yazdı. Düzəliş: format və icazəli statuslar `research-types`-da açıq göstərilir.
 7. **Plugin qovluğunun içində iş qovluğu**: `sandbox/` plugin qovluğunun içində olanda Claude Code `reports/`-a yazmanı "həssas fayl" sayıb başsız rejimdə blokladı. Düzəliş: README-də iş qovluğunun plugin qovluğundan kənarda olması tələbi.
 
+### Düzəlişlərdən sonra təkrar sınaq
+- **Biznes (qəhvəxana), təkrar:** **KEÇDİ 33/33**, 51 təxmin düsturla, `critic` 13 etiraz (8 qəbul, 5 qismən), hamısına cavab. Qaralama mərhələsi artıq cəhd limitini xərcləmədi; 2-ci düzəliş real sessiyada təsdiqləndi. $12,79.
+- **Hüquq (Aİ bal), təkrar:** nəticəsiz. Bu sessiyada sınaq mühiti bütün Bash əmrlərini rədd etdi, ona görə agent fayl yazmadı və bunu açıq dedi ("sitatların əksəri hərfi yoxlanmayıb", "ilkin icmal"). Mahiyyət birinci sessiya ilə eynidir (Azərbaycan 2021/405 I Əlavəsində bal üçün yoxdur). Birinci sessiyanın hesabatı düzəlişlərdən sonra yenidən yoxlandı: 29/29 fakt təsdiqləndi, yeganə problem tənqid faylının olmamasıdır (2-ci problemin nəticəsi).
+
 ### Əl ilə dəqiqlik yoxlaması (şərt 0): 20 tapıntıdan 20-si düz
 Texniki (5), elmi (5), siyasət (5), biznes (5) hesabatlarından seçilmiş 20 tapıntını özüm mənbədə yoxladım: rəqəm, sitatın həmin göstəriciyə aid olması, daha yaxşı mənbə. **20/20 düzdür.** Diqqət tələb edən ikisi də düz çıxdı: Geostat sitatı "amounted to 18.5 percent" kontekstdə "the unemployment rate in Georgia … amounted to 18.5 percent"-dir; DSK ev təsərrüfatları büllitenində 28,8 manat 31-ci cədvəlin "Bakı şəhəri" sütunudur. Skriptin keçirdiyi, amma yanlış olan hal tapılmadı.
 
