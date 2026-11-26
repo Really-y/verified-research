@@ -739,7 +739,19 @@ def verify(report_path, delay=1.0, out=sys.stdout):
     print("\nNəticə: %d/%d fakt təsdiqləndi, %d problem. Keyfiyyət xülasəsi: %s.quality.md"
           % (st["verified"], st["facts"], len(R.problems), stem.name), file=out)
     print("YOXLAMA KEÇDİ" if not R.problems else "YOXLAMA UĞURSUZ", file=out)
+    LAST_PROBLEMS[:] = R.problems
     return 0 if not R.problems else 1
+
+
+# Sonuncu yoxlamanın problemləri (hook mərhələ problemlərini rəqəm problemlərindən ayırmaq üçün oxuyur)
+LAST_PROBLEMS = []
+# Qaralama mərhələsində gözlənilən problemlər: tənqid hesabat yazıldıqdan SONRA aparılır
+STAGE_PREFIXES = ("TƏNQİD FAYLI YOXDUR", "Tənqid bölməsi yoxdur")
+
+
+def stage_only(problems):
+    """Bütün problemlər yalnız tənqid mərhələsinin hələ aparılmamasından irəli gəlir."""
+    return bool(problems) and all(str(x).startswith(STAGE_PREFIXES) for x in problems)
 
 
 def main():

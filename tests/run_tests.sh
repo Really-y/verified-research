@@ -107,6 +107,16 @@ hook "$W/reports/fabricated.md" >/dev/null
 exp "uydurma hesabat, cəhd 3"   "$(hook "$W/reports/fabricated.md")" 2
 grep -q "LİMİT" "$W/err" && echo "KEÇDİ   3-cü cəhddə dayanma təlimatı verilir" || { echo "UĞURSUZ limit mesajı yoxdur"; FAIL=1; }
 
+# real sınaqda tapıldı (biznes): tənqiddən əvvəlki qaralamalar cəhd limitini doldururdu
+cp reports/good.md reports/draft.md; cp reports/good.findings.json reports/draft.findings.json; cp default.coverage.json reports/draft.coverage.json
+for i in 1 2 3 4; do r=$(hook "$W/reports/draft.md"); done
+exp "tənqidsiz qaralama, 4-cü yazılış" "$r" 2
+grep -q "cəhd sayılmadı" "$W/err" && ! grep -q "LİMİT" "$W/err" && [ ! -f reports/.draft.attempts ] \
+  && echo "KEÇDİ   yalnız tənqid mərhələsi qalan qaralama cəhd limitini xərcləmir" || { echo "UĞURSUZ qaralama cəhd sayıldı"; FAIL=1; }
+sed 's/57,4/62,1/g' reports/draft.md > reports/draft2.md; sed 's/57,4/62,1/g' reports/draft.findings.json > reports/draft2.findings.json; cp default.coverage.json reports/draft2.coverage.json
+hook "$W/reports/draft2.md" >/dev/null
+grep -q "cəhd 1/3" "$W/err" && echo "KEÇDİ   tənqidsiz qaralamada uydurma rəqəm yenə cəhd sayılır" || { echo "UĞURSUZ uydurma qaralama cəhd sayılmadı"; FAIL=1; }
+
 echo "--- save_findings.py"
 python3 "$ROOT/scripts/save_findings.py" reports/good.findings.json --question "test" --sector "pərakəndə" >/dev/null
 n=$(python3 -c "import sqlite3;print(sqlite3.connect('data/research.db').execute('select count(*) from findings').fetchone()[0])")

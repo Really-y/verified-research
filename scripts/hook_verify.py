@@ -10,6 +10,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
+import verify_report  # noqa: E402
 from verify_report import verify  # noqa: E402
 
 MAX_ATTEMPTS = 3
@@ -35,6 +36,12 @@ def main():
     if rc == 0:
         counter.unlink(missing_ok=True)
         return 0
+    if verify_report.stage_only(verify_report.LAST_PROBLEMS):
+        # Qaralama: rəqəmlər qaydasındadır, yalnız tənqid mərhələsi qalıb. Cəhd sayılmır.
+        sys.stderr.write("verified-research: qaralama yoxlandı, rəqəmlər qaydasındadır (cəhd sayılmadı). "
+                         "Növbəti addım: critical-review (critic subagenti, critique.json, tənqid bölməsi).\n%s\n"
+                         % buf.getvalue())
+        return 2
     n = int(counter.read_text()) + 1 if counter.exists() else 1
     counter.write_text(str(n))
     sys.stderr.write("verified-research yoxlaması (cəhd %d/%d): %s\n%s\n" % (n, MAX_ATTEMPTS, p.name, buf.getvalue()))
