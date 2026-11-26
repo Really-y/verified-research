@@ -58,6 +58,23 @@ Hüquq (Aİ bal) üçüncü dəfə, "tək sadə əmr" və "Bash rədd olunsa da 
 
 **Yekun: 9 araşdırma növünün hamısı real sessiyada yoxlamadan keçdi** (market+legal, business, target_markets, company, academic, legal, technical, policy, due_diligence), üstəlik data olmayan sual, mənbəsiz rəqəm tələsi və şəxsi məlumat həddi düzgün idarə olundu.
 
+### Yekun müstəqil təkrar yoxlama (bütün mənbələr yenidən endirilib, son skript versiyası ilə)
+
+| Hesabat | Nəticə |
+|---|---|
+| market + legal (GE su) | KEÇDİ 63/63 |
+| business (qəhvəxana) | KEÇDİ 33/33 |
+| target_markets (Körfəz fındıq) | KEÇDİ 85/85 |
+| company (Kapital Bank) | KEÇDİ 21/21; bankın 2024 və 2025 PDF-ləri imzalı link köhnəldiyi üçün `source_page`-dən təzə linklə açıldı |
+| due_diligence (Koç Holding) | KEÇDİ 55/55 |
+| academic (dördgünlük həftə) | KEÇDİ 34/34 |
+| legal (Aİ bal) | KEÇDİ 18/18 |
+| technical (PostgreSQL / MySQL) | KEÇDİ 12/12 |
+| policy (AZ / GE işsizlik) | KEÇDİ 27/27 |
+| **Cəmi** | **348/348 fakt, 0 problem** |
+
+`bash tests/run_tests.sh`: 93 KEÇDİ, 0 UĞURSUZ. `claude plugin validate . --strict`: Validation passed (yeganə xəbərdarlıq: plugin ikonu yoxdur).
+
 ### Əl ilə dəqiqlik yoxlaması (şərt 0): 9 kateqoriyada 41 tapıntıdan 41-i düz
 Texniki (5), elmi (5), siyasət (5), biznes (5) hesabatlarından seçilmiş 20 tapıntını özüm mənbədə yoxladım: rəqəm, sitatın həmin göstəriciyə aid olması, daha yaxşı mənbə. **20/20 düzdür.** Diqqət tələb edən ikisi də düz çıxdı: Geostat sitatı "amounted to 18.5 percent" kontekstdə "the unemployment rate in Georgia … amounted to 18.5 percent"-dir; DSK ev təsərrüfatları büllitenində 28,8 manat 31-ci cədvəlin "Bakı şəhəri" sütunudur. Skriptin keçirdiyi, amma yanlış olan hal tapılmadı.
 
