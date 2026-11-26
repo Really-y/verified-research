@@ -80,8 +80,9 @@ check() { # ad, gözlənilən kod, gözlənilən mətn
   [ -f "reports/$1.coverage.json" ] || [ "$1" = nocoverage ] || cp default.coverage.json "reports/$1.coverage.json"
   [ -f "reports/$1.critique.json" ] || [ "$1" = nocritique ] || cp default.critique.json "reports/$1.critique.json"
   if [ -f "reports/$1.md" ] && [ "$1" != noheading ] && ! grep -q "^## Tənqid və əks mövqe" "reports/$1.md"; then
-    printf '\n## Tənqid və əks mövqe\nƏn zəif fərziyyə tələbin artım tempidir. Etirazlar və cavablar tənqid faylındadır.\n' >> "reports/$1.md"
+    printf '\n## Tənqid və əks mövqe\nƏn zəif fərziyyə tələbin növbəti üç ildə indiki tempdə artacağıdır. Əks mövqe: bazar artıq doymuş ola bilər, artım yalnız qiymət artımından gəlir, həcm isə sabitdir. Əsas etirazlar: güclü rəqib qiyməti aşağı sala bilər (rədd edildi, rəqibin payı kiçikdir), bazar həcmi tək media mənbəyinə söykənir (qəbul edildi, rəsmi mənbə əlavə olundu), mövsümilik nəzərə alınmayıb (qismən).\n' >> "reports/$1.md"
   fi
+  [ -f "reports/$1.md" ] && [ "$1" != stalecrit ] && touch "reports/$1.md"
   out="$(python3 "$ROOT/scripts/verify_report.py" "reports/$1.md" --delay 0 2>&1)"; rc=$?
   if [ $rc -eq $2 ] && grep -q "$3" <<< "$out"; then echo "KEÇDİ   $1 (kod $rc, \"$3\")"
   else echo "UĞURSUZ $1 (kod $rc, gözlənilən $2 və \"$3\")"; echo "$out" | sed 's/^/    /'; FAIL=1; fi
@@ -385,6 +386,16 @@ json.dump(g + [f2], open("reports/textbad.findings.json", "w", encoding="utf-8")
 EOF2
 check textok  0 "YOXLAMA KEÇDİ"
 check textbad 1 "DƏYƏR SİTATDA YOXDUR"
+
+# due diligence real sınağından: tənqid bölməsi yer tutucu qalmış, hesabat tənqiddən sonra yenilənməmişdi
+sed '/^## Tənqid və əks mövqe/,$d' reports/corrok.md > reports/placeholder.md; cp reports/corrok.findings.json reports/placeholder.findings.json
+printf '\n## Tənqid və əks mövqe\n(critic subagentinin nəticəsi gözlənilir)\n' >> reports/placeholder.md
+check placeholder 1 "TƏNQİD BÖLMƏSİ BOŞDUR"
+sed '/^## Tənqid və əks mövqe/,$d' reports/corrok.md > reports/stalecrit.md; cp reports/corrok.findings.json reports/stalecrit.findings.json
+cp default.coverage.json reports/stalecrit.coverage.json
+printf '\n## Tənqid və əks mövqe\nƏn zəif fərziyyə tələbin növbəti üç ildə indiki tempdə artacağıdır. Əks mövqe: bazar artıq doymuş ola bilər, artım yalnız qiymət artımından gəlir, həcm isə sabitdir. Əsas etirazlar: güclü rəqib qiyməti aşağı sala bilər, bazar həcmi tək media mənbəyinə söykənir, mövsümilik nəzərə alınmayıb; hamısına cavab verilib.\n' >> reports/stalecrit.md
+touch -d "2 minutes ago" reports/stalecrit.md; cp default.critique.json reports/stalecrit.critique.json
+check stalecrit 1 "HESABAT TƏNQİDDƏN SONRA YENİLƏNMƏYİB"
 
 echo "--- zəif yerlər (GOAL şərt 9)"
 python3 "$ROOT/tests/test_weaknesses.py" || FAIL=1

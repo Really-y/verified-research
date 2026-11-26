@@ -87,6 +87,25 @@ Hüquq (Aİ bal) üçüncü dəfə, "tək sadə əmr" və "Bash rədd olunsa da 
 - policy: tərif və metodologiya fərqi, müqayisənin şərti, 2020-dən trend, "Boşluqlar və risklər"
 - market + legal: iki yanaşma ilə təxmin, icazə addımları, boşluqlar
 
+### Müstəqil təhlil auditi (3 ayrıca yoxlayıcı agent, hesabatların müəllifi ilə əlaqəsiz)
+Hər təxmin yenidən hesablandı (~290 dəyər, o cümlədən biznes modeli və hədəf bazarın 48 çəkili balı sıfırdan qurularaq), nəticələrin faktlardan çıxıb-çıxmadığı yoxlandı.
+
+| Hesabat | Hesablama | Hökm | Əsas qeyd |
+|---|---|---|---|
+| market + legal | 12/12 düz | sağlam, kiçik qüsurlar | findings.json-da "yuxarı hədd" adı qalıb |
+| business | 51/51 düz | sağlam, kiçik qüsurlar | geri ödəmə müddətində avadanlıq iki dəfə sayılıb (~33 ay yox, ~21 ay; ehtiyatlı istiqamətdə) |
+| target_markets | 48 bal + ~60 rəqəm düz | sağlam, kiçik qüsurlar | Səudiyyə üçün "ən sürətli artım" ifadəsi modeldən güclüdür |
+| company | 11/11 düz | sağlam, kiçik qüsurlar | depozit və törəmə şirkət haqqında tapıntısız iddialar |
+| due_diligence | mətndəki rəqəmlər düz | **qüsurlu** | qəbul edilmiş `high` etiraz hesabata düşməyib, tənqid bölməsi yer tutucu qalıb |
+| legal | yoxdur | sağlam, kiçik qüsurlar | bir maddə nömrəsi səhv (67 əvəzinə 66(7)) |
+| academic | düz | sağlam, kiçik qüsurlar | bir mənbənin göstərmədiyi "nümunə" iki mənbəyə aid edilib |
+| technical | 9/9 düz (mənbə yenidən endirildi) | **qüsurlu (təhlükəsizlik bölməsi)** | "ən yüksək MySQL CVE 8.8" deyilir, öz datasında 9.1 (kritik) var; müqayisə pəncərələri eyni deyil |
+| policy | 10/10 düz | sağlam, kiçik qüsurlar | qəbul edilmiş etiraza baxmayaraq 01.02.2026 rəqəmi bir yerdə "2025" adlanır |
+
+**Pluginə düzəlişlər:** (1) skript tənqid bölməsi yer tutucudursa və ya `critique.json` hesabatdan yenidirsə rədd edir (Koç hesabatının nüsxəsində yoxlandı: iki problem tutuldu; 2 yeni sınaq); (2) `critic` dəstəksiz iddiaları, xülasənin öz data ilə ziddiyyətini və müqayisə pəncərələrini yoxlayır; (3) `report-editor` tənqiddən sonra hesabatı yenidən yazır.
+
+**Nəticə:** rəqəmlər və hesablamalar etibarlıdır (bütün yoxlamalarda 0 səhv); təhlilin ifadəsində bəzən sübutdan güclü iddialar qalır. Skript bunun bir hissəsini (köhnə və ya boş tənqid) indi tutur; qalanını `critic` və oxucu yoxlamalıdır.
+
 ### Əl ilə dəqiqlik yoxlaması (şərt 0): 9 kateqoriyada 41 tapıntıdan 41-i düz
 Texniki (5), elmi (5), siyasət (5), biznes (5) hesabatlarından seçilmiş 20 tapıntını özüm mənbədə yoxladım: rəqəm, sitatın həmin göstəriciyə aid olması, daha yaxşı mənbə. **20/20 düzdür.** Diqqət tələb edən ikisi də düz çıxdı: Geostat sitatı "amounted to 18.5 percent" kontekstdə "the unemployment rate in Georgia … amounted to 18.5 percent"-dir; DSK ev təsərrüfatları büllitenində 28,8 manat 31-ci cədvəlin "Bakı şəhəri" sütunudur. Skriptin keçirdiyi, amma yanlış olan hal tapılmadı.
 

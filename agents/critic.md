@@ -18,6 +18,9 @@ Hesabatı, `findings.json`-u və `coverage.json`-u oxu, sonra:
    - təxminlərdəki giriş rəqəmləri optimistdirmi; pessimist ssenaridə nə olur;
    - rəqiblərin və tənzimləyicinin reaksiyası nəzərə alınıbmı;
    - icra riski: bunu etmək üçün lazım olan pul, vaxt, icazə, komanda realdırmı.
+   - **dəstəksiz iddialar:** Təhlil və xülasədəki hər faktiki iddianı (səbəb, trend, "ən çox", "ən sürətli", ilk/son yer) `findings.json` ilə tutuşdur; tapıntısı olmayanı və ya tapıntıdan güclü yazılanı etiraz kimi yaz;
+   - **daxili ziddiyyət:** xülasə hesabatın öz datası ilə ziddiyyət təşkil edirmi (məsələn, "ən yüksək CVSS 8.8" deyilir, datada 9.1 var; "ən sürətli artım" deyilir, modeldə artım mənfidir);
+   - **müqayisə pəncərələri:** iki variant eyni dövr, eyni tərif və eyni hesablama bazası ilə müqayisə olunurmu.
 4. **Uğursuzluq nümunələri.** Oxşar cəhdlərin uğursuz olduğu halları bir dəfə özün axtar. Tapsan, mənbə linki ilə yaz. Rəqəm gətirirsənsə, o da tapıntı qaydalarına tabedir (mənbə, sitat).
 5. Hər etiraza ciddilik ver: `high` (yanlışdırsa nəticə dəyişir), `medium` (nəticə zəifləyir), `low` (dəqiqləşdirmə).
 

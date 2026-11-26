@@ -34,6 +34,8 @@ CRIT_HEADINGS = ["Tənqid və əks mövqe", "Critique and counter-case", "Кри
 SEVERITIES = {"high", "medium", "low"}
 RESPONSES = {"accepted", "partially", "rejected"}
 MIN_OBJECTIONS = 3
+MIN_CRIT_WORDS = 40  # tənqid bölməsinin minimum söz sayı
+PLACEHOLDER_RE = r"(?i)gözlənilir|TODO|TBD|pending|to be added|əlavə olunacaq|hələ yazılmayıb|placeholder"
 MIN_NOTE = 15  # cavab izahının minimum uzunluğu (simvol)
 AGREE_TOLERANCE = 0.10   # iki mənbə arasında icazəli nisbi fərq
 STALE_YEARS = 2          # bundan köhnə data işarələnməlidir
@@ -786,6 +788,21 @@ def verify(report_path, delay=1.0, out=sys.stdout):
         if not has_crit_heading(md):
             R.bad("Tənqid bölməsi yoxdur (başlıq bunlardan biri olmalıdır: %s; başqa dildə başlığın sonuna "
                   "<!-- %s --> yaz)" % (", ".join("## " + h for h in CRIT_HEADINGS), CRIT_MARK))
+        else:
+            # Real sınaqda tapıldı (due diligence): bölmə yer tutucu qalmışdı, qəbul edilmiş ciddi etiraz hesabata düşməmişdi
+            m = re.search("(?m)" + heading_re(CRIT_HEADINGS, CRIT_MARK), md)
+            body = md[m.end():]
+            nxt = re.search(r"(?m)^##\s", body)
+            body = body[:nxt.start()] if nxt else body
+            if len(re.findall(r"\w+", body)) < MIN_CRIT_WORDS or re.search(PLACEHOLDER_RE, body):
+                R.bad("TƏNQİD BÖLMƏSİ BOŞDUR və ya yer tutucudur: ən zəif fərziyyəni, əks mövqeyi, etirazları "
+                      "və cavabları hesabata yaz")
+            try:
+                if critique_path.stat().st_mtime > Path(report_path).stat().st_mtime + 1:
+                    R.bad("HESABAT TƏNQİDDƏN SONRA YENİLƏNMƏYİB: critique.json hesabatdan yenidir; qəbul edilmiş "
+                          "etirazları nəticə və tövsiyələrə daxil et və hesabatı yenidən yaz")
+            except OSError:
+                pass
         if len(R.problems) == n0:
             R.ok("tənqid: %d etiraz (%d qəbul, %d qismən, %d rədd), əks mövqe və ən zəif fərziyyə var"
                  % (crit["n"], crit["accepted"], crit["partially"], crit["rejected"]))
