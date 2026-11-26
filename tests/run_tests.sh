@@ -118,6 +118,17 @@ sed 's/57,4/62,1/g' reports/draft.md > reports/draft2.md; sed 's/57,4/62,1/g' re
 hook "$W/reports/draft2.md" >/dev/null
 grep -q "cəhd 1/3" "$W/err" && echo "KEÇDİ   tənqidsiz qaralamada uydurma rəqəm yenə cəhd sayılır" || { echo "UĞURSUZ uydurma qaralama cəhd sayılmadı"; FAIL=1; }
 
+# real sınaqda tapıldı (şirkət): problemləri azaldan agent limitə çatıb tənqiddən əvvəl dayanırdı
+sed 's/57,4/62,1/g; s/10 180,8/10 999,9/g' reports/good.md > reports/prog.md
+sed 's/57,4/62,1/g; s/10 180,8/10 999,9/g' reports/good.findings.json > reports/prog.findings.json; cp default.coverage.json reports/prog.coverage.json; cp default.critique.json reports/prog.critique.json
+hook "$W/reports/prog.md" >/dev/null; hook "$W/reports/prog.md" >/dev/null
+sed 's/10 999,9/10 180,8/g' reports/prog.md > reports/p.tmp && mv reports/p.tmp reports/prog.md
+sed 's/10 999,9/10 180,8/g' reports/prog.findings.json > reports/p.tmp && mv reports/p.tmp reports/prog.findings.json
+hook "$W/reports/prog.md" >/dev/null
+grep -q "irəliləyiş var" "$W/err" && grep -q "cəhd 2/3" "$W/err" && echo "KEÇDİ   problem sayı azalanda cəhd sayılmır" || { echo "UĞURSUZ irəliləyiş cəhd sayıldı"; cat "$W/err" | head -3; FAIL=1; }
+hook "$W/reports/prog.md" >/dev/null
+grep -q "cəhd 3/3" "$W/err" && grep -q "LİMİT" "$W/err" && echo "KEÇDİ   irəliləyiş olmayanda limit yenə işləyir" || { echo "UĞURSUZ limit işləmədi"; FAIL=1; }
+
 echo "--- save_findings.py"
 python3 "$ROOT/scripts/save_findings.py" reports/good.findings.json --question "test" --sector "pərakəndə" >/dev/null
 n=$(python3 -c "import sqlite3;print(sqlite3.connect('data/research.db').execute('select count(*) from findings').fetchone()[0])")

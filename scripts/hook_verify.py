@@ -42,9 +42,21 @@ def main():
                          "Növbəti addım: critical-review (critic subagenti, critique.json, tənqid bölməsi).\n%s\n"
                          % buf.getvalue())
         return 2
-    n = int(counter.read_text()) + 1 if counter.exists() else 1
-    counter.write_text(str(n))
-    sys.stderr.write("verified-research yoxlaması (cəhd %d/%d): %s\n%s\n" % (n, MAX_ATTEMPTS, p.name, buf.getvalue()))
+    # Cəhd yalnız irəliləyiş olmayanda sayılır: problemlərin sayı azalırsa, agent düzəldir, dövrə düşməyib.
+    # (Şirkət real sınağında hər dəfə fərqli problemləri düzəldən agent 3 cəhddən sonra tənqidə çatmadan dayanırdı.)
+    nprob = len(verify_report.LAST_PROBLEMS)
+    n, prev = 0, None
+    if counter.exists():
+        parts = counter.read_text().split()
+        n = int(parts[0]) if parts and parts[0].isdigit() else 0
+        prev = int(parts[1]) if len(parts) > 1 and parts[1].isdigit() else None
+    progress = prev is not None and nprob < prev
+    if not progress:
+        n += 1
+    counter.write_text("%d %d" % (n, nprob))
+    sys.stderr.write("verified-research yoxlaması (cəhd %d/%d%s): %s\n%s\n"
+                     % (n, MAX_ATTEMPTS, ", irəliləyiş var: %d -> %d problem, cəhd sayılmadı" % (prev, nprob) if progress else "",
+                        p.name, buf.getvalue()))
     if n >= MAX_ATTEMPTS:
         sys.stderr.write("LİMİT: %d uğursuz cəhd. Hesabatı daha dəyişmə. Dayan və yuxarıdakı "
                          "uğursuz rəqəmləri istifadəçiyə göstər.\n" % n)
