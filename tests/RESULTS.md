@@ -43,8 +43,30 @@ Bütün 9 araşdırma ssenarisində `research-method` və `research-types` avtom
 - **Biznes (qəhvəxana), təkrar:** **KEÇDİ 33/33**, 51 təxmin düsturla, `critic` 13 etiraz (8 qəbul, 5 qismən), hamısına cavab. Qaralama mərhələsi artıq cəhd limitini xərcləmədi; 2-ci düzəliş real sessiyada təsdiqləndi. $12,79.
 - **Hüquq (Aİ bal), təkrar:** nəticəsiz. Bu sessiyada sınaq mühiti bütün Bash əmrlərini rədd etdi, ona görə agent fayl yazmadı və bunu açıq dedi ("sitatların əksəri hərfi yoxlanmayıb", "ilkin icmal"). Mahiyyət birinci sessiya ilə eynidir (Azərbaycan 2021/405 I Əlavəsində bal üçün yoxdur). Birinci sessiyanın hesabatı düzəlişlərdən sonra yenidən yoxlandı: 29/29 fakt təsdiqləndi, yeganə problem tənqid faylının olmamasıdır (2-ci problemin nəticəsi).
 
-### Əl ilə dəqiqlik yoxlaması (şərt 0): 20 tapıntıdan 20-si düz
+### Şirkət və hüquq: son düzəlişlər və təkrar sınaqlar
+Şirkət ssenarisi (Kapital Bank) 5 dəfə işlədildi; hər uğursuzluq pluginə düzəliş gətirdi:
+
+| Cəhd | Nəticə | Səbəb | Düzəliş |
+|---|---|---|---|
+| v1 | 2/19 | bankın PDF-ləri 403; `covered` statusu; tənqid yox | statuslar açıq yazıldı |
+| v2 | 28/30 | mətn faktı ("Aliyev and Pashayev families") rədd edildi; tənqidi agent özü yazdı | mətn faktı sitatda hərfi yoxlanılır; `"author": "self"` rədd edilir, critic `"author": "critic"` yazır |
+| v3 | 10/29 | bankın imzalı linkləri (`?expires=…&signature=…`) ~1 saatda köhnəlir, son yoxlama 1,5 dəq gec oldu | `source_page`: köhnə link sabit səhifədən eyni faylın təzə linki ilə yenilənir (bloku keçmir, saytın öz linkidir) |
+| v4 | 31/34 | agent hər dəfə fərqli problemi düzəldirdi, amma 3 cəhd limiti tənqiddən əvvəl doldu | cəhd yalnız problem sayı azalmayanda sayılır |
+| **v5** | **KEÇDİ 21/21**, 12 əsas rəqəmin 12-si 1-ci səviyyə, `critic` 5 etiraz | | |
+
+Hüquq (Aİ bal) üçüncü dəfə, "tək sadə əmr" və "Bash rədd olunsa da faylları yaz" qaydasından sonra: **KEÇDİ 18/18**, 12 əsas rəqəmin 12-si rəsmi Aİ mətnindən, `critic` 8 etiraz. İkinci cəhddə agent üç birləşdirilmiş əmr rədd olunanda Bash-ın tam bağlı olduğunu fərz edib heç bir fayl yazmamışdı.
+
+**Yekun: 9 araşdırma növünün hamısı real sessiyada yoxlamadan keçdi** (market+legal, business, target_markets, company, academic, legal, technical, policy, due_diligence), üstəlik data olmayan sual, mənbəsiz rəqəm tələsi və şəxsi məlumat həddi düzgün idarə olundu.
+
+### Əl ilə dəqiqlik yoxlaması (şərt 0): 9 kateqoriyada 41 tapıntıdan 41-i düz
 Texniki (5), elmi (5), siyasət (5), biznes (5) hesabatlarından seçilmiş 20 tapıntını özüm mənbədə yoxladım: rəqəm, sitatın həmin göstəriciyə aid olması, daha yaxşı mənbə. **20/20 düzdür.** Diqqət tələb edən ikisi də düz çıxdı: Geostat sitatı "amounted to 18.5 percent" kontekstdə "the unemployment rate in Georgia … amounted to 18.5 percent"-dir; DSK ev təsərrüfatları büllitenində 28,8 manat 31-ci cədvəlin "Bakı şəhəri" sütunudur. Skriptin keçirdiyi, amma yanlış olan hal tapılmadı.
+
+Əlavə 21 tapıntı (qalan kateqoriyalar), kontekstdə yoxlanılıb:
+- **due diligence (4):** Koç Holding İstanbul reyestri 85714; Koç ailəsi 63,48%; 2025 konsolidə hasılat 2.757.295 və ana şirkətə aid xalis mənfəət 22.001 mln TL. Cədvəlin sütunları "EUR 2025 | USD 2025 | TL 2025 | TL 2024"-dür, rəqəmlər düzgün sütundandır.
+- **target_markets (4):** Comtrade JSON sitatlarında `cmdCode` (080221/080222), `reporterCode` (48 Bəhreyn, 414 Küveyt) və `primaryValue` göstəriciyə uyğundur; il URL-dəki `period=2023`-dən gəlir.
+- **market + legal (4):** Geostat cədvəlinin sütunları 2022–2025-dir: mineral su ixracı 2025 172 163,5 min $, 2024 162 694,1; həcm 255 279,9 min litr; idxal 271,0.
+- **legal (4):** 2021/405 maddə 21 bal siyahısıdır; Azərbaycan sətri "X (15)", qeyd 15 "Finfish products only".
+- **company (5):** "profit for the year 274,560 239,182" (2025, 2024), "İl üzrə mənfəət 282,103 304,663" (2023, Mərkəzi Bankın nüsxəsi), cəmi aktivlər 11,573,501 və 11,648,076. Hamısı cari il sütunundandır.
 
 Zəif yerlər (yanlış deyil, amma insan baxmalıdır): biznes hesabatında B üsulu 2025 dövriyyəsini 2024 Bakı payı ilə vurur (agent özü qeyd edib); MySQL dəstək tarixləri Oracle saytı bloklandığı üçün endoflife.date (4-cü səviyyə) + AWS-dən; `nodata` cavabında "Gəncə əhalinin ~3%-i" mənbəsizdir (hesabat yazılmadığı üçün skript tutmadı).
 
