@@ -28,7 +28,7 @@ Sualı istənilən dildə yazın ("Almaniyada üzvi qida bazarı nə qədərdir?
 - Hook: `reports/*.md` yazılanda `scripts/verify_report.py` işə düşür; uğursuzluq Claude-a qaytarılır
 - Skriptlər: `verify_report.py` (yoxlama), `fetch_text.py` (mənbə mətnini yoxlamanın gördüyü kimi göstərir, hərfi sitat üçün), `save_findings.py` (SQLite və CSV)
 
-İş datası (`reports/`, `data/research.db`, `research-data/sources/`, `.env`) plugin qovluğunda deyil, işlədiyiniz qovluqda saxlanılır.
+İş datası (`reports/`, `data/research.db`, `research-data/sources/`, `.env`) plugin qovluğunda deyil, işlədiyiniz qovluqda saxlanılır. **Claude-u plugin qovluğunun içindən yox, ayrıca iş qovluğundan işə salın:** Claude Code `--plugin-dir` qovluğunun içinə yazmağı həssas fayl dəyişikliyi sayır və başsız rejimdə (`claude -p`) bloklayır.
 
 ## Keyfiyyət yoxlaması
 

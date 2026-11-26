@@ -76,6 +76,10 @@ Then ask in any language:
 The report is written in the language of the question. You can also call the method directly with
 `/verified-research:research-method`.
 
+> **Run Claude from a separate working folder, not from inside the plugin folder.** Reports, findings and
+> country source maps are written to the folder you start Claude in. Claude Code treats writes inside a
+> `--plugin-dir` folder as edits to sensitive files and blocks them in headless runs (`claude -p`).
+
 ### Requirements
 
 Python 3.9+ and [`pypdf`](https://pypi.org/project/pypdf/), because many statistics offices publish PDFs.
