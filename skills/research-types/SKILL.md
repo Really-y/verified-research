@@ -38,6 +38,8 @@ Sualı aşağıdakı növlərdən birinə və ya bir neçəsinə aid et. Qarış
 | `due_diligence` | `registration`, `ownership`, `financials`, `litigation`, `sanctions` (OFAC, AB, BMT, Böyük Britaniya siyahıları), `licenses`, `media` (iddia ilə sübut ayrı), `claims_vs_evidence` (təşkilatın öz iddiaları və onları təsdiq edən sənəd) |
 | `other` | sənin alt sualların, ən azı üç |
 
+Format (bütün növlər üçün eyni): `{"type": "company", "items": {"identity": {"status": "found"}, "management": {"status": "not_found", "searched": ["yer 1: nəticə", "yer 2: nəticə"]}}}`. `status` yalnız `found`, `partial` və ya `not_found` ola bilər (`covered`, `done` kimi başqa sözləri skript rədd edir).
+
 Bölmə uyğun deyilsə (məsələn, xidmət şirkətində `trade`), onu atma: `not_found` yaz və `searched`-də iki yer göstər. Növ adını səhv yazsan, skript rədd edir.
 
 ## 3. Sübut standartı
