@@ -70,6 +70,8 @@ Eyni fakt üçün həmişə ən yuxarı səviyyəni seç:
 ]
 ```
 
+Mənbə linki imzalıdırsa və müddəti bitir (`?expires=…&signature=…`, `X-Amz-Signature` və s.), tapıntıya `"source_page"` əlavə et: sənədin linkinin göründüyü sabit səhifə (məsələn, şirkətin "Hesabatlar" səhifəsi). Yoxlama skripti link köhnələndə həmin səhifədən eyni faylın təzə linkini götürür. Mətn faktında (sahib, qurum adı) `value` sitatda hərfi keçməlidir.
+
 Sahələr: `source_tier` hər fakt üçün məcburidir; `key` nəticənin söykəndiyi rəqəmlər üçün; `value_num` əsas rəqəmlər və təsdiq mənbələri üçün (eyni vahidə çevrilmiş ədəd); `tier_reason`, `stale_note`, `discrepancy_note` skript tələb edəndə. Ətraflı: `source-quality`.
 
 **Əvvəlcə findings.json, sonra hesabatı yaz.**

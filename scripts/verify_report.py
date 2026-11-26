@@ -405,6 +405,27 @@ def key_table_rows(md):
     return [r for r in rows[2:] if r.strip("| -")]
 
 
+SIGNED_RE = re.compile(r"(?i)[?&](expires|signature|x-amz-expires|x-amz-signature|se|sig|token|exp)=")
+
+
+def signed_url(url):
+    """Müddəti bitən imzalı link (S3, CDN, saytın öz imzalı yükləmə linkləri)."""
+    return bool(SIGNED_RE.search(url or ""))
+
+
+def refresh_signed(url, landing):
+    """Sabit səhifədə eyni fayla (sorğu hissəsi olmadan eyni yol) gedən təzə linki tapır."""
+    st, text, note, raw = fetch(landing)
+    if st != 200 or not raw:
+        return None
+    want = urllib.parse.unquote(urllib.parse.urlsplit(url).path)
+    for href in re.findall(r'(?i)href=["\']([^"\']+)["\']', raw):
+        full = urllib.parse.urljoin(landing, html.unescape(href))
+        if urllib.parse.unquote(urllib.parse.urlsplit(full).path) == want:
+            return full
+    return None
+
+
 def today():
     return datetime.date.fromisoformat(os.environ.get("VERIFY_TODAY", datetime.date.today().isoformat()))
 
@@ -412,6 +433,7 @@ def today():
 class Run:
     def __init__(self, delay):
         self.delay, self.cache, self.problems, self.lines = delay, {}, [], []
+        self.landing, self.refreshed = {}, []  # imzalı link -> sabit səhifə (source_page)
         self.trusted = load_trusted()
 
     def bad(self, msg):
@@ -425,7 +447,21 @@ class Run:
         if url not in self.cache:
             if self.cache:
                 time.sleep(self.delay)
-            self.cache[url] = fetch(url)
+            r = fetch(url)
+            if r[0] in (401, 403, 410) and signed_url(url) and self.landing.get(url):
+                fresh = refresh_signed(url, self.landing[url])
+                if fresh:
+                    time.sleep(self.delay)
+                    r2 = fetch(fresh)
+                    if r2[0] == 200:
+                        self.refreshed.append("%s -> %s səhifəsindən təzə link" % (url.split("?")[0], self.landing[url]))
+                        r = r2
+                if r[0] != 200:
+                    r = (r[0], r[1], "%s; imzalı linkin müddəti bitib, source_page-də eyni fayl tapılmadı" % r[2], r[3])
+            elif r[0] in (401, 403, 410) and signed_url(url):
+                r = (r[0], r[1], "%s; link imzalıdır və müddəti bitə bilər: tapıntıya sənədin göründüyü sabit səhifəni "
+                     "source_page kimi yaz" % r[2], r[3])
+            self.cache[url] = r
         return self.cache[url]
 
     def check_source(self, label, value, url, quote):
@@ -505,6 +541,11 @@ def verify(report_path, delay=1.0, out=sys.stdout):
     st = {"ambiguous": [], "facts": 0, "verified": 0, "estimates": 0, "tiers": {}, "manual_tier": [], "key": 0,
           "key_primary": 0, "key_corroborated": 0, "stale": [], "discrepancies": []}
 
+    for f in findings:
+        if isinstance(f, dict):
+            for src in [f] + [c for c in (f.get("corroboration") or []) if isinstance(c, dict)]:
+                if src.get("source_page") and src.get("source_url"):
+                    R.landing[src["source_url"]] = src["source_page"]
     for i, f in enumerate(findings, 1):
         if not isinstance(f, dict):
             R.lines.append("[%d]" % i)
@@ -763,6 +804,8 @@ def verify(report_path, delay=1.0, out=sys.stdout):
         q += ["## Ən zəif fərziyyə", crit["weakest"], ""]
     if crit["counter"]:
         q += ["## Əks mövqe", crit["counter"], ""]
+    if R.refreshed:
+        q += ["## İmzalı linklər sabit səhifədən yeniləndi"] + ["- " + x for x in R.refreshed] + [""]
     if critique_path.exists() and not crit["author"]:
         q += ["## İnsan baxmalıdır: tənqidin müəllifi göstərilməyib",
               "critique.json-da \"author\": \"critic\" yoxdur; tənqidin müstəqil critic subagentindən gəldiyi təsdiqlənmir.", ""]

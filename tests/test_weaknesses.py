@@ -105,4 +105,32 @@ r = V.fetch("http://x")
 ok(len(calls) == V.RETRIES + 1 and "müvəqqəti" in r[2], "bağlantı qırılmasında təkrar cəhd və müvəqqəti xəta qeydi")
 V._fetch_once, V.time.sleep = _orig, _sleep
 
+# 11. Real sınaqda tapıldı (şirkət): bankın imzalı PDF linkləri ~1 saatdan sonra 403 verir
+import http.server, threading
+class H(http.server.BaseHTTPRequestHandler):
+    def log_message(self, *a): pass
+    def do_GET(self):
+        if self.path.startswith("/reports"):
+            body = b'<html><body><a href="/files/r%2025.pdf?expires=999&amp;signature=new">2025</a></body></html>'
+            code = 200
+        elif self.path.startswith("/files/r%2025.pdf"):
+            code = 200 if "signature=new" in self.path else 403
+            body = b"<html><body><p>Net profit 274,560 thousand AZN</p></body></html>" if code == 200 else b"forbidden"
+        else:
+            code, body = 404, b""
+        self.send_response(code); self.send_header("Content-Type", "text/html"); self.end_headers(); self.wfile.write(body)
+srv = http.server.HTTPServer(("127.0.0.1", 0), H)
+threading.Thread(target=srv.serve_forever, daemon=True).start()
+base = "http://127.0.0.1:%d" % srv.server_port
+old = base + "/files/r%2025.pdf?expires=1&signature=old"
+ok(V.signed_url(old) and not V.signed_url(base + "/files/r.pdf"), "imzalı link tanınır")
+ok(V.refresh_signed(old, base + "/reports") == base + "/files/r%2025.pdf?expires=999&signature=new", "sabit səhifədə eyni faylın təzə linki tapılır")
+R = V.Run(0)
+R.landing[old] = base + "/reports"
+ok(R.page(old)[0] == 200 and R.refreshed, "müddəti bitmiş imzalı link source_page ilə yenilənir")
+R2 = V.Run(0)
+st, _, note, _ = R2.page(old)
+ok(st == 403 and "source_page" in note, "source_page olmadan imzalı link üçün aydın göstəriş verilir")
+srv.shutdown()
+
 print("KEÇDİ   zəif yerlər (%d yoxlama)" % n)
