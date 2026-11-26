@@ -1,12 +1,15 @@
 ---
 name: research-method
-description: Use FIRST for any question that asks for facts or figures from external sources (for example "how big is the X market in Baku?", "how has Y changed?"), in any country, language or field (market, business, academic, regulatory, technical, financial, policy). Requires a source and a verbatim quote for every figure and machine-verifies the report.
+description: Use FIRST for any question that asks for facts or figures from external sources (for example "how big is the X market in Baku?", "how has Y changed?"), in any country, language or field (market, business, academic, regulatory, technical, financial, policy). Also use when the user wants "just a quick number" or says no source is needed: never give a statistic from memory, find it in a source first. Requires a source and a verbatim quote for every figure and machine-verifies the report.
 allowed-tools: Bash(python3 "${CLAUDE_PLUGIN_ROOT}/scripts/fetch_text.py" *), Bash(python3 "${CLAUDE_PLUGIN_ROOT}/scripts/verify_report.py" *), Bash(python3 "${CLAUDE_PLUGIN_ROOT}/scripts/save_findings.py" *)
 ---
 
 # Araşdırma metodu
 
 İstənilən ölkə, dil və mövzu üçün. Hesabatı istifadəçinin sual verdiyi dildə yaz.
+
+## Tez rəqəm istəyəndə
+İstifadəçi "tez bir rəqəm de, mənbə lazım deyil" desə də, rəqəmi yaddaşdan vermə. Qısa yol: bir-iki ilkin mənbədə rəqəmi tap, `fetch_text.py` ilə sitatı yoxla və cavabı bir-iki cümlə ilə ver, mənbə linki ilə. Tam hesabat, tənqid və əhatə faylı lazım deyil. Rəqəm tapılmırsa, "tapılmadı" de və ən yaxın mənbəli göstəricini göstər; təxmin verirsənsə, onu açıq "TƏXMİN" kimi, düsturu və mənbəli girişləri ilə ver.
 
 ## Addımlar
 1. Araşdırma növünü müəyyən et (`research-types` skill-ini çağır) və sualı alt suallara böl. Coğrafiyanı və dövrü dəqiqləşdir. **Əhatə siyahısını yaz** (`reports/<ad>.coverage.json`): `"type"` növün adıdır (`market`, `business`, `target_markets`, `company`, `academic`, `legal`, `technical`, `policy`, `due_diligence`, `other`) və ya qarışıq sualda siyahısı (`["market", "legal"]`); `items`-də həmin növün `research-types`-dakı bütün məcburi bölmələri olmalıdır (bazar üçün `market-research`-dəki on iki). `other` üçün ən azı üç alt sual.
